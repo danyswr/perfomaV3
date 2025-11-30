@@ -5,13 +5,14 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
+ARG BACKEND_URL=http://localhost:8000
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
 COPY . .
-RUN NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL npm run build
+RUN BACKEND_URL=$BACKEND_URL NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL npm run build
 
 # Stage 2: Python Backend
 FROM python:3.11-slim AS backend
