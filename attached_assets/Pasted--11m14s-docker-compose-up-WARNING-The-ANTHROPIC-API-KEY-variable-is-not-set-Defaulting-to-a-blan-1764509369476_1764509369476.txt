@@ -1,0 +1,114 @@
+ 11m14s ◎ docker-compose up
+WARNING: The ANTHROPIC_API_KEY variable is not set. Defaulting to a blank string.
+WARNING: The OPENAI_API_KEY variable is not set. Defaulting to a blank string.
+Creating network "perfomav3_cybersec-network" with driver "bridge"
+Creating perfomav3_postgres_1 ... done
+Creating perfomav3_backend_1  ... done
+Creating perfomav3_frontend_1 ... done
+Attaching to perfomav3_postgres_1, perfomav3_backend_1, perfomav3_frontend_1
+postgres_1  | 
+postgres_1  | PostgreSQL Database directory appears to contain a database; Skipping initialization
+postgres_1  | 
+postgres_1  | 2025-11-30 13:28:54.440 UTC [1] LOG:  starting PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+postgres_1  | 2025-11-30 13:28:54.441 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres_1  | 2025-11-30 13:28:54.441 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres_1  | 2025-11-30 13:28:54.445 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2025-11-30 13:28:54.451 UTC [29] LOG:  database system was shut down at 2025-11-30 13:10:13 UTC
+postgres_1  | 2025-11-30 13:28:54.458 UTC [1] LOG:  database system is ready to accept connections
+frontend_1  | 
+frontend_1  | > my-v0-project@0.1.0 start
+frontend_1  | > next start -H 0.0.0.0 -p 5000 -p 5000 -H 0.0.0.0
+frontend_1  | 
+frontend_1  |    ▲ Next.js 16.0.3
+frontend_1  |    - Local:         http://localhost:5000
+frontend_1  |    - Network:       http://0.0.0.0:5000
+frontend_1  | 
+frontend_1  |  ✓ Starting...
+frontend_1  |  ✓ Ready in 437ms
+backend_1   | Traceback (most recent call last):
+backend_1   |   File "/app/backend/.venv/bin/uvicorn", line 10, in <module>
+backend_1   |     sys.exit(main())
+backend_1   |              ^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/click/core.py", line 1485, in __call__
+backend_1   |     return self.main(*args, **kwargs)
+backend_1   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/click/core.py", line 1406, in main
+backend_1   |     rv = self.invoke(ctx)
+backend_1   |          ^^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/click/core.py", line 1269, in invoke
+backend_1   |     return ctx.invoke(self.callback, **ctx.params)
+backend_1   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/click/core.py", line 824, in invoke
+backend_1   |     return callback(*args, **kwargs)
+backend_1   |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/main.py", line 423, in main
+backend_1   |     run(
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/main.py", line 593, in run
+backend_1   |     server.run()
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 67, in run
+backend_1   |     return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+backend_1   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/_compat.py", line 30, in asyncio_run
+backend_1   |     return runner.run(main)
+backend_1   |            ^^^^^^^^^^^^^^^^
+backend_1   |   File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
+backend_1   |     return self._loop.run_until_complete(task)
+backend_1   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+backend_1   |     return future.result()
+backend_1   |            ^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 71, in serve
+backend_1   |     await self._serve(sockets)
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 78, in _serve
+backend_1   |     config.load()
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/config.py", line 439, in load
+backend_1   |     self.loaded_app = import_from_string(self.app)
+backend_1   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend_1   |     module = importlib.import_module(module_str)
+backend_1   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+backend_1   |     return _bootstrap._gcd_import(name[level:], package, level)
+backend_1   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   |   File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+backend_1   |   File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+backend_1   |   File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+backend_1   |   File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+backend_1   |   File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+backend_1   |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend_1   |   File "/app/backend/main.py", line 5, in <module>
+backend_1   |     from server.api import router as api_router
+backend_1   |   File "/app/backend/server/api.py", line 4, in <module>
+backend_1   |     from agent import get_agent_manager
+backend_1   |   File "/app/backend/agent/__init__.py", line 1, in <module>
+backend_1   |     from agent.manager import AgentManager
+backend_1   |   File "/app/backend/agent/manager.py", line 5, in <module>
+backend_1   |     from agent.worker import AgentWorker
+backend_1   |   File "/app/backend/agent/worker.py", line 6, in <module>
+backend_1   |     from agent.executor import CommandExecutor
+backend_1   |   File "/app/backend/agent/executor.py", line 10, in <module>
+backend_1   |     from server.config import settings
+backend_1   |   File "/app/backend/server/config.py", line 76, in <module>
+backend_1   |     settings = Settings()
+backend_1   |                ^^^^^^^^^^
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/pydantic_settings/main.py", line 194, in __init__
+backend_1   |     super().__init__(
+backend_1   |   File "/app/backend/.venv/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+backend_1   |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+backend_1   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend_1   | pydantic_core._pydantic_core.ValidationError: 2 validation errors for Settings
+backend_1   | next_public_api_url
+backend_1   |   Extra inputs are not permitted [type=extra_forbidden, input_value='http://localhost:8000', input_type=str]
+backend_1   |     For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden
+backend_1   | next_public_ws_url
+backend_1   |   Extra inputs are not permitted [type=extra_forbidden, input_value='ws://localhost:8000', input_type=str]
+backend_1   |     For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden
+perfomav3_backend_1 exited with code 1
+Exception in thread Thread-10:
+Traceback (most recent call last):
+  File "threading.py", line 926, in _bootstrap_inner
+  File "threading.py", line 870, in run
+  File "compose/cli/log_printer.py", line 202, in watch_events
+  File "compose/project.py", line 626, in yield_loop
+  File "compose/project.py", line 594, in build_container_event
+KeyError: 'id'
