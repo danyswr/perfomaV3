@@ -303,6 +303,39 @@ export const api = {
     }
   },
 
+  async saveMissionConfig(config: {
+    target?: string
+    category?: string
+    custom_instruction?: string
+    stealth_mode?: boolean
+    aggressive_mode?: boolean
+    model_name?: string
+    num_agents?: number
+    execution_duration?: number | null
+    requested_tools?: string[]
+    allowed_tools_only?: boolean
+  }) {
+    try {
+      const res = await fetch(`${API_BASE}/api/config/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      })
+      return handleResponse<{ status: string; config_id: string; message: string }>(res)
+    } catch {
+      return { error: "Cannot save configuration" }
+    }
+  },
+
+  async getSavedConfig() {
+    try {
+      const res = await fetch(`${API_BASE}/api/config/saved`)
+      return handleResponse<{ config: any; status?: string; message?: string }>(res)
+    } catch {
+      return { error: "Cannot fetch saved configuration" }
+    }
+  },
+
   async getSessions() {
     try {
       const res = await fetch(`${API_BASE}/api/sessions`)

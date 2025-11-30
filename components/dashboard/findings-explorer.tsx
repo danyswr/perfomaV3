@@ -242,6 +242,99 @@ function RealtimeLogEntry({ log, agentId }: { log: AgentLogEntry; agentId: strin
   )
 }
 
+interface AgentRealtimeLogsProps {
+  realtimeLogs: { [agentId: string]: AgentLogEntry[] }
+  allRealtimeLogs: (AgentLogEntry & { agentId: string })[]
+  clearRealtimeLogs: () => void
+  scrollRef: React.RefObject<HTMLDivElement | null>
+}
+
+function AgentRealtimeLogs({ realtimeLogs, allRealtimeLogs, clearRealtimeLogs, scrollRef }: AgentRealtimeLogsProps) {
+  const [selectedAgent, setSelectedAgent] = useState<string>("all")
+  const agentIds = Object.keys(realtimeLogs)
+  
+  const displayLogs = selectedAgent === "all" 
+    ? allRealtimeLogs 
+    : (realtimeLogs[selectedAgent] || []).map(log => ({ ...log, agentId: selectedAgent }))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between px-2 pb-2 border-b border-border/50 mb-2">
+        <div className="flex items-center gap-2">
+          <Activity className="w-3 h-3 text-green-500 animate-pulse" />
+          <span className="text-xs text-muted-foreground">
+            {displayLogs.length} live events
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {agentIds.length > 0 && (
+            <select 
+              value={selectedAgent}
+              onChange={(e) => setSelectedAgent(e.target.value)}
+              className="h-6 text-xs bg-sidebar border border-sidebar-border rounded px-2 text-foreground"
+            >
+              <option value="all">All Agents ({agentIds.length})</option>
+              {agentIds.map(agentId => (
+                <option key={agentId} value={agentId}>
+                  Agent {agentId.substring(0, 8)} ({realtimeLogs[agentId]?.length || 0})
+                </option>
+              ))}
+            </select>
+          )}
+          {allRealtimeLogs.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 text-xs"
+              onClick={clearRealtimeLogs}
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      {agentIds.length > 1 && selectedAgent === "all" && (
+        <div className="flex gap-1 px-2 pb-2 flex-wrap">
+          {agentIds.map(agentId => (
+            <Badge 
+              key={agentId}
+              variant="outline" 
+              className="text-[9px] cursor-pointer hover:bg-primary/10"
+              onClick={() => setSelectedAgent(agentId)}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1 animate-pulse" />
+              {agentId.substring(0, 8)}
+              <span className="ml-1 text-muted-foreground">({realtimeLogs[agentId]?.length || 0})</span>
+            </Badge>
+          ))}
+        </div>
+      )}
+      
+      <ScrollArea className="flex-1">
+        <div ref={scrollRef} className="space-y-0.5">
+          {displayLogs.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Zap className="w-10 h-10 mx-auto mb-2 opacity-20" />
+              <p className="text-sm">No live logs yet</p>
+              <p className="text-xs">Real-time agent events appear here</p>
+            </div>
+          ) : (
+            displayLogs.slice(0, 100).map((log, idx) => (
+              <RealtimeLogEntry 
+                key={`${log.agentId}-${log.timestamp}-${idx}`} 
+                log={log} 
+                agentId={log.agentId}
+              />
+            ))
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  )
+}
+
 export function FindingsExplorer() {
   const { 
     explorer, 
@@ -349,45 +442,12 @@ export function FindingsExplorer() {
             </TabsContent>
             
             <TabsContent value="realtime" className="flex-1 overflow-hidden m-0 p-2">
-              <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between px-2 pb-2">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-3 h-3 text-green-500 animate-pulse" />
-                    <span className="text-xs text-muted-foreground">
-                      {allRealtimeLogs.length} live events
-                    </span>
-                  </div>
-                  {allRealtimeLogs.length > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 text-xs"
-                      onClick={clearRealtimeLogs}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-                <ScrollArea className="flex-1">
-                  <div ref={scrollRef} className="space-y-0.5">
-                    {allRealtimeLogs.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Zap className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">No live logs yet</p>
-                        <p className="text-xs">Real-time agent events appear here</p>
-                      </div>
-                    ) : (
-                      allRealtimeLogs.slice(0, 100).map((log, idx) => (
-                        <RealtimeLogEntry 
-                          key={`${log.agentId}-${log.timestamp}-${idx}`} 
-                          log={log} 
-                          agentId={log.agentId}
-                        />
-                      ))
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
+              <AgentRealtimeLogs 
+                realtimeLogs={realtimeLogs}
+                allRealtimeLogs={allRealtimeLogs}
+                clearRealtimeLogs={clearRealtimeLogs}
+                scrollRef={scrollRef}
+              />
             </TabsContent>
             
             <TabsContent value="logs" className="flex-1 overflow-hidden m-0 p-2">

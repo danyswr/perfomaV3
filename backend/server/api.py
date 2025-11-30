@@ -378,6 +378,68 @@ async def generate_deserialization(language: str, gadget: str, command: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class SaveMissionConfigInput(BaseModel):
+    target: Optional[str] = ""
+    category: str = "domain"
+    custom_instruction: Optional[str] = ""
+    stealth_mode: bool = False
+    aggressive_mode: bool = False
+    model_name: str = "openai/gpt-4-turbo"
+    num_agents: int = 3
+    execution_duration: Optional[int] = None
+    requested_tools: List[str] = []
+    allowed_tools_only: bool = False
+
+@router.post("/config/save")
+async def save_mission_config(config: SaveMissionConfigInput):
+    """Save mission configuration for later use"""
+    try:
+        from agent.memory import get_memory
+        import uuid
+        
+        memory = get_memory()
+        config_id = str(uuid.uuid4())[:8]
+        
+        config_data = {
+            "id": config_id,
+            "target": config.target,
+            "category": config.category,
+            "custom_instruction": config.custom_instruction,
+            "stealth_mode": config.stealth_mode,
+            "aggressive_mode": config.aggressive_mode,
+            "model_name": config.model_name,
+            "num_agents": config.num_agents,
+            "execution_duration": config.execution_duration,
+            "requested_tools": config.requested_tools,
+            "allowed_tools_only": config.allowed_tools_only,
+            "saved_at": datetime.now().isoformat()
+        }
+        
+        await memory.save_config(config_id, config_data)
+        
+        return {
+            "status": "saved",
+            "config_id": config_id,
+            "message": "Mission configuration saved successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/config/saved")
+async def get_saved_config():
+    """Get the most recently saved mission configuration"""
+    try:
+        from agent.memory import get_memory
+        memory = get_memory()
+        config = await memory.get_latest_config()
+        
+        if not config:
+            return {"config": None, "message": "No saved configuration found"}
+        
+        return {"config": config, "status": "found"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/session/save")
 async def save_session():
     """Save current mission session for later resume"""

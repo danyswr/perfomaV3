@@ -114,28 +114,60 @@ import {
 import { toast } from "sonner";
 import { Save, RotateCcw } from "lucide-react";
 
-function SaveSessionButton() {
+interface SaveSessionButtonProps {
+  config?: MissionConfig;
+}
+
+function SaveSessionButton({ config }: SaveSessionButtonProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const { mission } = useMission();
 
   const handleSave = async () => {
-    if (!mission.active) return;
     setSaving(true);
     try {
-      const response = await api.saveSession();
-      if (response.data) {
+      if (config) {
+        const configResponse = await api.saveMissionConfig({
+          target: config.target,
+          category: config.category,
+          custom_instruction: config.customInstruction,
+          stealth_mode: config.stealthMode,
+          aggressive_mode: config.aggressiveLevel > 2,
+          model_name: config.modelName,
+          num_agents: config.numAgents,
+          execution_duration: config.executionDuration,
+          requested_tools: config.requestedTools,
+          allowed_tools_only: config.allowedToolsOnly,
+        });
+        
+        if (configResponse.error) {
+          toast.error("Config save failed", { description: configResponse.error });
+          setSaving(false);
+          return;
+        }
+      }
+      
+      if (mission.active) {
+        const response = await api.saveSession();
+        if (response.data) {
+          setSaved(true);
+          toast.success("Session & Config saved!", {
+            description: `ID: ${response.data.session_id.substring(0, 8)}...`,
+          });
+          setTimeout(() => setSaved(false), 3000);
+        } else if (response.error) {
+          toast.error("Session save failed", { description: response.error });
+        }
+      } else {
         setSaved(true);
-        toast.success("Session saved!", {
-          description: `ID: ${response.data.session_id.substring(0, 8)}...`,
+        toast.success("Configuration saved!", {
+          description: "Mission config has been saved",
         });
         setTimeout(() => setSaved(false), 3000);
-      } else if (response.error) {
-        toast.error("Save failed", { description: response.error });
       }
     } catch {
-      toast.error("Failed to save session");
+      toast.error("Failed to save");
     } finally {
       setSaving(false);
     }
@@ -146,7 +178,7 @@ function SaveSessionButton() {
       variant={saved ? "default" : "outline"}
       size="sm"
       onClick={handleSave}
-      disabled={saving || !mission.active}
+      disabled={saving}
       className={`gap-1.5 ${saved ? "bg-green-600 hover:bg-green-700" : ""}`}
     >
       {saving ? (
@@ -504,7 +536,7 @@ export default function Dashboard() {
               maxDuration={mission.maxDuration}
             />
           )}
-          <SaveSessionButton />
+          <SaveSessionButton config={config} />
           <RestoreSessionButton />
           {mission.active && (
             <Button variant="destructive" size="sm" onClick={stopMission}>

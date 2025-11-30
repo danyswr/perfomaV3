@@ -768,6 +768,49 @@ class AgentMemory:
             await db.commit()
             return True
 
+    async def save_config(self, config_id: str, config_data: Dict) -> bool:
+        """Save mission configuration"""
+        await self.initialize()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS saved_configs (
+                    id TEXT PRIMARY KEY,
+                    config_data TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            await db.execute("""
+                INSERT OR REPLACE INTO saved_configs (id, config_data, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+            """, (config_id, json.dumps(config_data)))
+            await db.commit()
+            return True
+
+    async def get_latest_config(self) -> Optional[Dict]:
+        """Get the most recently saved configuration"""
+        await self.initialize()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            
+            try:
+                async with db.execute("""
+                    SELECT * FROM saved_configs 
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """) as cursor:
+                    row = await cursor.fetchone()
+                    if row:
+                        config = dict(row)
+                        config['config_data'] = json.loads(config['config_data'])
+                        return config['config_data']
+                    return None
+            except:
+                return None
+
 
 class AgentMemoryManager:
     """Singleton manager for agent memory"""

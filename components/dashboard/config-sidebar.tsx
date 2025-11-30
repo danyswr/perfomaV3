@@ -311,7 +311,7 @@ export function ConfigSidebar({ open, onOpenChange, onStartMission, missionActiv
                       placeholder="Describe your assessment objectives..."
                       value={config.customInstruction}
                       onChange={(e) => setConfig({ ...config, customInstruction: e.target.value })}
-                      className="min-h-[100px] bg-sidebar-accent border-sidebar-border resize-none focus:border-primary"
+                      className="min-h-[80px] max-h-[120px] bg-sidebar-accent border-sidebar-border resize-none focus:border-primary overflow-y-auto"
                     />
                   </div>
 
