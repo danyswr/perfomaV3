@@ -304,6 +304,7 @@ export const api = {
   },
 
   async saveMissionConfig(config: {
+    name?: string
     target?: string
     category?: string
     custom_instruction?: string
@@ -321,7 +322,7 @@ export const api = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
       })
-      return handleResponse<{ status: string; config_id: string; message: string }>(res)
+      return handleResponse<{ status: string; config_id: string; name: string; message: string }>(res)
     } catch {
       return { error: "Cannot save configuration" }
     }
@@ -333,6 +334,54 @@ export const api = {
       return handleResponse<{ config: any; status?: string; message?: string }>(res)
     } catch {
       return { error: "Cannot fetch saved configuration" }
+    }
+  },
+
+  async listSavedConfigs() {
+    try {
+      const res = await fetch(`${API_BASE}/api/config/list`)
+      return handleResponse<{ configs: any[]; count: number }>(res)
+    } catch {
+      return { error: "Cannot fetch saved configurations" }
+    }
+  },
+
+  async getConfigById(configId: string) {
+    try {
+      const res = await fetch(`${API_BASE}/api/config/${configId}`)
+      return handleResponse<{ config: any; status: string }>(res)
+    } catch {
+      return { error: "Cannot fetch configuration" }
+    }
+  },
+
+  async deleteConfig(configId: string) {
+    try {
+      const res = await fetch(`${API_BASE}/api/config/${configId}`, {
+        method: "DELETE",
+      })
+      return handleResponse<{ status: string; config_id: string }>(res)
+    } catch {
+      return { error: "Cannot delete configuration" }
+    }
+  },
+
+  async generateMissionSummary(data: {
+    agent_logs: any[]
+    findings: any[]
+    target: string
+    execution_time: string
+    reason: string
+  }) {
+    try {
+      const res = await fetch(`${API_BASE}/api/mission/summary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      return handleResponse<{ status: string; summary: string }>(res)
+    } catch {
+      return { error: "Cannot generate summary" }
     }
   },
 

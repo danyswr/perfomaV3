@@ -121,14 +121,22 @@ interface SaveSessionButtonProps {
 function SaveSessionButton({ config }: SaveSessionButtonProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveName, setSaveName] = useState("");
 
   const { mission } = useMission();
 
   const handleSave = async () => {
+    if (!saveName.trim()) {
+      toast.error("Please enter a name for this configuration");
+      return;
+    }
+    
     setSaving(true);
     try {
       if (config) {
         const configResponse = await api.saveMissionConfig({
+          name: saveName.trim(),
           target: config.target,
           category: config.category,
           custom_instruction: config.customInstruction,
@@ -152,18 +160,22 @@ function SaveSessionButton({ config }: SaveSessionButtonProps) {
         const response = await api.saveSession();
         if (response.data) {
           setSaved(true);
-          toast.success("Session & Config saved!", {
-            description: `ID: ${response.data.session_id.substring(0, 8)}...`,
+          toast.success(`"${saveName}" saved!`, {
+            description: `Session ID: ${response.data.session_id.substring(0, 8)}...`,
           });
+          setShowSaveDialog(false);
+          setSaveName("");
           setTimeout(() => setSaved(false), 3000);
         } else if (response.error) {
           toast.error("Session save failed", { description: response.error });
         }
       } else {
         setSaved(true);
-        toast.success("Configuration saved!", {
-          description: "Mission config has been saved",
+        toast.success(`"${saveName}" saved!`, {
+          description: "Configuration saved successfully",
         });
+        setShowSaveDialog(false);
+        setSaveName("");
         setTimeout(() => setSaved(false), 3000);
       }
     } catch {
@@ -174,61 +186,260 @@ function SaveSessionButton({ config }: SaveSessionButtonProps) {
   };
 
   return (
-    <Button
-      variant={saved ? "default" : "outline"}
-      size="sm"
-      onClick={handleSave}
-      disabled={saving}
-      className={`gap-1.5 ${saved ? "bg-green-600 hover:bg-green-700" : ""}`}
-    >
-      {saving ? (
-        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-      ) : saved ? (
-        <Check className="w-3.5 h-3.5" />
-      ) : (
-        <Save className="w-3.5 h-3.5" />
-      )}
-      {saved ? "Saved" : "Save"}
-    </Button>
+    <>
+      <Button
+        variant={saved ? "default" : "outline"}
+        size="sm"
+        onClick={() => setShowSaveDialog(true)}
+        disabled={saving}
+        className={`gap-1.5 ${saved ? "bg-green-600 hover:bg-green-700" : ""}`}
+      >
+        {saving ? (
+          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+        ) : saved ? (
+          <Check className="w-3.5 h-3.5" />
+        ) : (
+          <Save className="w-3.5 h-3.5" />
+        )}
+        {saved ? "Saved" : "Save"}
+      </Button>
+
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save Configuration</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Configuration Name</Label>
+              <Input
+                placeholder="My Security Scan Config"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSave()}
+              />
+            </div>
+            {config && (
+              <div className="text-xs text-muted-foreground space-y-1 p-3 bg-muted/50 rounded-lg">
+                <p><strong>Target:</strong> {config.target || "Not set"}</p>
+                <p><strong>Model:</strong> {config.modelName}</p>
+                <p><strong>Tools:</strong> {config.requestedTools?.length || 0} selected</p>
+                <p><strong>Agents:</strong> {config.numAgents}</p>
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={saving || !saveName.trim()}>
+                {saving ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
-function RestoreSessionButton() {
-  const [showSessions, setShowSessions] = useState(false);
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [resuming, setResuming] = useState<string | null>(null);
+interface MissionSummaryDialogProps {
+  open: boolean;
+  onClose: () => void;
+  target: string;
+  executionTime: string;
+  reason: string;
+  agentLogs: any[];
+  findings: any[];
+}
 
-  const loadSessions = async () => {
-    setLoading(true);
+function MissionSummaryDialog({ 
+  open, 
+  onClose, 
+  target, 
+  executionTime, 
+  reason, 
+  agentLogs, 
+  findings 
+}: MissionSummaryDialogProps) {
+  const [generating, setGenerating] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (open && !summary) {
+      generateSummary();
+    }
+  }, [open]);
+
+  const generateSummary = async () => {
+    setGenerating(true);
+    setProgress(0);
+    
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 500);
+
     try {
-      const response = await api.getSessions();
-      if (response.data) {
-        setSessions(response.data.sessions);
+      const response = await api.generateMissionSummary({
+        agent_logs: agentLogs,
+        findings: findings,
+        target: target,
+        execution_time: executionTime,
+        reason: reason,
+      });
+
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      if (response.data?.summary) {
+        setSummary(response.data.summary);
+      } else {
+        setSummary(`## Mission Summary\n\n**Target:** ${target}\n**Duration:** ${executionTime}\n**Status:** ${reason}\n\n- Processed ${agentLogs.length} log entries\n- Found ${findings.length} items\n\nPlease review the Findings Explorer for detailed results.`);
       }
     } catch {
-      toast.error("Failed to load sessions");
+      clearInterval(progressInterval);
+      setProgress(100);
+      setSummary(`Unable to generate AI summary. Please review the findings manually.`);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleClose = () => {
+    setSummary(null);
+    setProgress(0);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-primary" />
+            Mission Summary
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-hidden">
+          {generating ? (
+            <div className="space-y-4 py-8">
+              <div className="text-center">
+                <Brain className="w-12 h-12 mx-auto mb-4 text-primary animate-pulse" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  AI is analyzing mission data and generating summary...
+                </p>
+              </div>
+              <Progress value={progress} className="w-full" />
+              <p className="text-xs text-center text-muted-foreground">
+                Processing {agentLogs.length} logs and {findings.length} findings
+              </p>
+            </div>
+          ) : summary ? (
+            <ScrollArea className="h-[400px]">
+              <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-lg">
+                <pre className="whitespace-pre-wrap text-sm font-sans">{summary}</pre>
+              </div>
+            </ScrollArea>
+          ) : null}
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button variant="outline" onClick={handleClose}>
+            Close
+          </Button>
+          {summary && (
+            <Button onClick={() => {
+              navigator.clipboard.writeText(summary);
+              toast.success("Summary copied to clipboard");
+            }}>
+              Copy Summary
+            </Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface RestoreButtonProps {
+  onLoadConfig?: (config: any) => void;
+}
+
+function RestoreSessionButton({ onLoadConfig }: RestoreButtonProps) {
+  const [showDialog, setShowDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<"configs" | "sessions">("configs");
+  const [configs, setConfigs] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [configsRes, sessionsRes] = await Promise.all([
+        api.listSavedConfigs(),
+        api.getSessions()
+      ]);
+      if (configsRes.data) setConfigs(configsRes.data.configs || []);
+      if (sessionsRes.data) setSessions(sessionsRes.data.sessions || []);
+    } catch {
+      toast.error("Failed to load saved data");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRestore = async (sessionId: string) => {
-    setResuming(sessionId);
+  const handleLoadConfig = async (configId: string) => {
+    setLoadingId(configId);
+    try {
+      const response = await api.getConfigById(configId);
+      if (response.data?.config && onLoadConfig) {
+        onLoadConfig(response.data.config);
+        toast.success("Configuration loaded!");
+        setShowDialog(false);
+      } else if (response.error) {
+        toast.error("Failed to load config", { description: response.error });
+      }
+    } catch {
+      toast.error("Failed to load configuration");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleResumeSession = async (sessionId: string) => {
+    setLoadingId(sessionId);
     try {
       const response = await api.resumeSession(sessionId);
       if (response.data) {
         toast.success("Session restored!", {
           description: `${response.data.agent_ids.length} agents resumed`,
         });
-        setShowSessions(false);
+        setShowDialog(false);
       } else if (response.error) {
         toast.error("Restore failed", { description: response.error });
       }
     } catch {
       toast.error("Failed to restore session");
     } finally {
-      setResuming(null);
+      setLoadingId(null);
+    }
+  };
+
+  const handleDeleteConfig = async (configId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await api.deleteConfig(configId);
+      setConfigs(configs.filter(c => c.id !== configId));
+      toast.success("Configuration deleted");
+    } catch {
+      toast.error("Failed to delete");
     }
   };
 
@@ -238,60 +449,118 @@ function RestoreSessionButton() {
         variant="outline"
         size="sm"
         onClick={() => {
-          setShowSessions(true);
-          loadSessions();
+          setShowDialog(true);
+          loadData();
         }}
         className="gap-1.5"
       >
         <RotateCcw className="w-3.5 h-3.5" />
-        Restore
+        Load
       </Button>
 
-      <Dialog open={showSessions} onOpenChange={setShowSessions}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Restore Saved Session</DialogTitle>
+            <DialogTitle>Load Saved Configuration</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            {loading ? (
-              <div className="flex justify-center py-4">
-                <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : sessions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No saved sessions
-              </p>
-            ) : (
-              <ScrollArea className="h-64">
-                <div className="space-y-2 p-4">
-                  {sessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{session.target}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(session.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleRestore(session.id)}
-                        disabled={resuming === session.id}
-                      >
-                        {resuming === session.id ? (
-                          <RefreshCw className="w-3 h-3 animate-spin" />
-                        ) : (
-                          "Resume"
-                        )}
-                      </Button>
-                    </div>
-                  ))}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="configs">Configurations</TabsTrigger>
+              <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="configs" className="mt-4">
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
                 </div>
-              </ScrollArea>
-            )}
-          </div>
+              ) : configs.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No saved configurations
+                </p>
+              ) : (
+                <ScrollArea className="h-72">
+                  <div className="space-y-2">
+                    {configs.map((config) => (
+                      <div
+                        key={config.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                        onClick={() => handleLoadConfig(config.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{config.name}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="truncate">{config.target || "No target"}</span>
+                            {config.tools_count > 0 && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                {config.tools_count} tools
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => handleDeleteConfig(config.id, e)}
+                            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                          {loadingId === config.id ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="sessions" className="mt-4">
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No saved sessions
+                </p>
+              ) : (
+                <ScrollArea className="h-72">
+                  <div className="space-y-2">
+                    {sessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{session.target}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(session.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handleResumeSession(session.id)}
+                          disabled={loadingId === session.id}
+                        >
+                          {loadingId === session.id ? (
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                          ) : (
+                            "Resume"
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </>
@@ -305,6 +574,14 @@ export default function Dashboard() {
   const [chatOpen, setChatOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [configTab, setConfigTab] = useState("target");
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState<{
+    target: string;
+    executionTime: string;
+    reason: string;
+    agentLogs: any[];
+    findings: any[];
+  } | null>(null);
 
   const { mission, startMission, stopMission } = useMission();
   const { agents, syncAgents, pauseAgent, resumeAgent, removeAgent, addAgent } =
@@ -379,6 +656,45 @@ export default function Dashboard() {
       if (agentIds) syncAgents(agentIds);
     }
   }, [config, customModelId, startMission, syncAgents]);
+
+  const handleStopMission = useCallback(async () => {
+    const duration = mission.duration || 0;
+    const mins = Math.floor(duration / 60);
+    const secs = duration % 60;
+    const executionTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+    
+    setSummaryData({
+      target: config.target || "Unknown",
+      executionTime,
+      reason: "user_stopped",
+      agentLogs: [],
+      findings: findings || [],
+    });
+    setShowSummary(true);
+    
+    await stopMission();
+  }, [config.target, mission.duration, findings, stopMission]);
+
+  const handleLoadConfig = useCallback((savedConfig: any) => {
+    setConfig({
+      target: savedConfig.target || "",
+      category: savedConfig.category || "domain",
+      customInstruction: savedConfig.custom_instruction || "",
+      stealthMode: savedConfig.stealth_mode ?? true,
+      aggressiveLevel: savedConfig.aggressive_mode ? 3 : 1,
+      modelName: savedConfig.model_name || "anthropic/claude-3.5-sonnet",
+      numAgents: savedConfig.num_agents || 3,
+      stealthOptions: DEFAULT_STEALTH_OPTIONS,
+      capabilities: DEFAULT_CAPABILITY_OPTIONS,
+      osType: "linux",
+      batchSize: 20,
+      rateLimitRps: 1.0,
+      rateLimitEnabled: false,
+      executionDuration: savedConfig.execution_duration || null,
+      requestedTools: savedConfig.requested_tools || [],
+      allowedToolsOnly: savedConfig.allowed_tools_only ?? false,
+    });
+  }, []);
 
   const handleTestApi = async () => {
     const isCustomModel = config.modelName === "custom";
@@ -537,14 +853,29 @@ export default function Dashboard() {
             />
           )}
           <SaveSessionButton config={config} />
-          <RestoreSessionButton />
+          <RestoreSessionButton onLoadConfig={handleLoadConfig} />
           {mission.active && (
-            <Button variant="destructive" size="sm" onClick={stopMission}>
+            <Button variant="destructive" size="sm" onClick={handleStopMission}>
               Stop Mission
             </Button>
           )}
         </div>
       </header>
+
+      {summaryData && (
+        <MissionSummaryDialog
+          open={showSummary}
+          onClose={() => {
+            setShowSummary(false);
+            setSummaryData(null);
+          }}
+          target={summaryData.target}
+          executionTime={summaryData.executionTime}
+          reason={summaryData.reason}
+          agentLogs={summaryData.agentLogs}
+          findings={summaryData.findings}
+        />
+      )}
 
       <div className="flex-1 flex overflow-hidden">
         <ChatSidebar open={chatOpen} onToggle={() => setChatOpen(!chatOpen)} />

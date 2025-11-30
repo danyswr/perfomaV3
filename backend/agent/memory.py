@@ -811,6 +811,74 @@ class AgentMemory:
             except:
                 return None
 
+    async def list_configs(self, limit: int = 20) -> List[Dict]:
+        """List all saved configurations"""
+        await self.initialize()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            
+            try:
+                await db.execute("""
+                    CREATE TABLE IF NOT EXISTS saved_configs (
+                        id TEXT PRIMARY KEY,
+                        config_data TEXT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                await db.commit()
+                
+                async with db.execute("""
+                    SELECT * FROM saved_configs 
+                    ORDER BY updated_at DESC 
+                    LIMIT ?
+                """, (limit,)) as cursor:
+                    rows = await cursor.fetchall()
+                    configs = []
+                    for row in rows:
+                        config = dict(row)
+                        config_data = json.loads(config['config_data'])
+                        configs.append({
+                            "id": config_data.get("id", config["id"]),
+                            "name": config_data.get("name", "Untitled"),
+                            "target": config_data.get("target", ""),
+                            "model_name": config_data.get("model_name", ""),
+                            "saved_at": config_data.get("saved_at", config.get("updated_at", "")),
+                            "tools_count": len(config_data.get("requested_tools", []))
+                        })
+                    return configs
+            except:
+                return []
+
+    async def get_config_by_id(self, config_id: str) -> Optional[Dict]:
+        """Get a specific configuration by ID"""
+        await self.initialize()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            
+            try:
+                async with db.execute("""
+                    SELECT * FROM saved_configs WHERE id = ?
+                """, (config_id,)) as cursor:
+                    row = await cursor.fetchone()
+                    if row:
+                        config = dict(row)
+                        return json.loads(config['config_data'])
+                    return None
+            except:
+                return None
+
+    async def delete_config(self, config_id: str) -> bool:
+        """Delete a saved configuration"""
+        await self.initialize()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("DELETE FROM saved_configs WHERE id = ?", (config_id,))
+            await db.commit()
+            return True
+
 
 class AgentMemoryManager:
     """Singleton manager for agent memory"""

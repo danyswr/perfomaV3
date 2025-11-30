@@ -867,7 +867,13 @@ class AgentWorker:
         
         if self.allowed_tools_only and self.requested_tools:
             tools_str = ", ".join(sorted(self.requested_tools)[:30])
-            tools_warning = "\nIMPORTANT: You can ONLY use these exact tools. Any other tool will be BLOCKED."
+            tools_warning = """
+
+⚠️ CRITICAL RESTRICTION ⚠️
+You are STRICTLY LIMITED to ONLY these tools: """ + tools_str + """
+ANY command using a tool NOT in this list will be REJECTED and BLOCKED.
+DO NOT attempt to use ANY other tools - they WILL NOT execute.
+If you need a tool not in this list, report it as a finding instead."""
         else:
             tools_by_category = get_allowed_tools_by_category()
             tools_list = []
@@ -931,7 +937,8 @@ When done, respond with:
 - Commands are added to a SHARED QUEUE - all agents pick from same queue
 - First agent to finish their current command picks up the next one
 - DO NOT include any text outside the JSON object
-- Use only tools from AVAILABLE TOOLS list
+- CRITICAL: Use ONLY tools from AVAILABLE TOOLS list - any other tool will be BLOCKED
+- If tool restrictions are enabled, you MUST ONLY use the specified tools, no exceptions
 """
         
         return prompt

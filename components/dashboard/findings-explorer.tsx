@@ -126,8 +126,8 @@ function FileViewer({ file, content, loading, onClose }: {
     switch (content.type) {
       case 'json':
         return (
-          <ScrollArea className="h-[500px]">
-            <pre className="text-xs font-mono p-4 bg-muted/30 rounded-lg overflow-x-auto whitespace-pre-wrap">
+          <ScrollArea className="h-full max-h-[60vh]">
+            <pre className="text-xs font-mono p-4 bg-muted/30 rounded-lg whitespace-pre-wrap break-all">
               {typeof content.content === 'string' 
                 ? content.content 
                 : JSON.stringify(content.content, null, 2)}
@@ -136,9 +136,9 @@ function FileViewer({ file, content, loading, onClose }: {
         )
       case 'html':
         return (
-          <ScrollArea className="h-[500px]">
+          <ScrollArea className="h-full max-h-[60vh]">
             <div 
-              className="prose prose-sm dark:prose-invert max-w-none p-4"
+              className="prose prose-sm dark:prose-invert max-w-none p-4 break-words"
               dangerouslySetInnerHTML={{ __html: content.content }}
             />
           </ScrollArea>
@@ -148,8 +148,8 @@ function FileViewer({ file, content, loading, onClose }: {
       case 'csv':
       case 'xml':
         return (
-          <ScrollArea className="h-[500px]">
-            <pre className="text-xs font-mono p-4 bg-muted/30 rounded-lg overflow-x-auto whitespace-pre-wrap">
+          <ScrollArea className="h-full max-h-[60vh]">
+            <pre className="text-xs font-mono p-4 bg-muted/30 rounded-lg whitespace-pre-wrap break-all">
               {content.content}
             </pre>
           </ScrollArea>
@@ -179,15 +179,15 @@ function FileViewer({ file, content, loading, onClose }: {
 
   return (
     <Dialog open={!!file} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="max-w-[90vw] w-[900px] max-h-[85vh] flex flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
+          <DialogTitle className="flex items-center gap-2 pr-8">
             {getFileIcon(file.type)}
-            <span className="truncate">{file.name}</span>
-            <Badge variant="outline" className="text-xs uppercase">{file.type}</Badge>
+            <span className="truncate flex-1 min-w-0">{file.name}</span>
+            <Badge variant="outline" className="text-xs uppercase shrink-0">{file.type}</Badge>
           </DialogTitle>
         </DialogHeader>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground pb-2 border-b">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground pb-2 border-b shrink-0 flex-wrap">
           <span className="flex items-center gap-1">
             <HardDrive className="w-3 h-3" />
             {formatFileSize(file.size)}
@@ -200,7 +200,9 @@ function FileViewer({ file, content, loading, onClose }: {
             <Badge variant="secondary" className="text-[10px]">Target: {file.target}</Badge>
           )}
         </div>
-        {renderContent()}
+        <div className="flex-1 overflow-hidden min-h-0">
+          {renderContent()}
+        </div>
       </DialogContent>
     </Dialog>
   )

@@ -379,6 +379,7 @@ async def generate_deserialization(language: str, gadget: str, command: str):
 
 
 class SaveMissionConfigInput(BaseModel):
+    name: str = "Untitled"
     target: Optional[str] = ""
     category: str = "domain"
     custom_instruction: Optional[str] = ""
@@ -392,7 +393,7 @@ class SaveMissionConfigInput(BaseModel):
 
 @router.post("/config/save")
 async def save_mission_config(config: SaveMissionConfigInput):
-    """Save mission configuration for later use"""
+    """Save mission configuration for later use with custom name"""
     try:
         from agent.memory import get_memory
         import uuid
@@ -402,6 +403,7 @@ async def save_mission_config(config: SaveMissionConfigInput):
         
         config_data = {
             "id": config_id,
+            "name": config.name,
             "target": config.target,
             "category": config.category,
             "custom_instruction": config.custom_instruction,
@@ -420,7 +422,8 @@ async def save_mission_config(config: SaveMissionConfigInput):
         return {
             "status": "saved",
             "config_id": config_id,
-            "message": "Mission configuration saved successfully"
+            "name": config.name,
+            "message": f"Configuration '{config.name}' saved successfully"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -439,6 +442,129 @@ async def get_saved_config():
         return {"config": config, "status": "found"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/config/list")
+async def list_saved_configs():
+    """List all saved configurations"""
+    try:
+        from agent.memory import get_memory
+        memory = get_memory()
+        configs = await memory.list_configs()
+        
+        return {"configs": configs, "count": len(configs)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/config/{config_id}")
+async def get_config_by_id(config_id: str):
+    """Get a specific saved configuration by ID"""
+    try:
+        from agent.memory import get_memory
+        memory = get_memory()
+        config = await memory.get_config_by_id(config_id)
+        
+        if not config:
+            raise HTTPException(status_code=404, detail="Configuration not found")
+        
+        return {"config": config, "status": "found"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/config/{config_id}")
+async def delete_config(config_id: str):
+    """Delete a saved configuration"""
+    try:
+        from agent.memory import get_memory
+        memory = get_memory()
+        await memory.delete_config(config_id)
+        
+        return {"status": "deleted", "config_id": config_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class GenerateSummaryInput(BaseModel):
+    agent_logs: List[dict] = []
+    findings: List[dict] = []
+    target: str = ""
+    execution_time: str = ""
+    reason: str = "completed"
+
+@router.post("/mission/summary")
+async def generate_mission_summary(data: GenerateSummaryInput):
+    """Generate AI summary of mission execution"""
+    try:
+        from agent.model_router import ModelRouter
+        
+        router = ModelRouter()
+        
+        logs_text = "\n".join([
+            f"[{log.get('timestamp', '')}] {log.get('agent_id', '')}: {log.get('message', '')}"
+            for log in data.agent_logs[-50:]
+        ])
+        
+        findings_text = "\n".join([
+            f"- [{f.get('severity', 'Info')}] {f.get('content', '')}"
+            for f in data.findings[-20:]
+        ])
+        
+        prompt = f"""Summarize this cybersecurity mission execution:
+
+Target: {data.target}
+Execution Time: {data.execution_time}
+Stop Reason: {data.reason}
+
+## Agent Activity Logs:
+{logs_text or "No logs available"}
+
+## Findings:
+{findings_text or "No findings recorded"}
+
+Provide a concise summary (3-5 bullet points) covering:
+1. What was scanned/analyzed
+2. Key findings or vulnerabilities discovered
+3. Overall security assessment
+4. Recommendations for next steps
+
+Keep it brief and actionable."""
+
+        try:
+            summary = await router.generate(
+                "anthropic/claude-3.5-sonnet",
+                "You are a cybersecurity analyst summarizing a security assessment.",
+                prompt,
+                []
+            )
+        except:
+            summary = f"""## Mission Summary
+
+**Target:** {data.target}
+**Duration:** {data.execution_time}
+**Status:** {data.reason.replace('_', ' ').title()}
+
+### Activity Summary
+- Processed {len(data.agent_logs)} agent log entries
+- Recorded {len(data.findings)} findings
+
+### Key Points
+{findings_text if findings_text else "- No critical findings recorded during this session"}
+
+### Recommendations
+- Review all findings in the Findings Explorer
+- Export detailed reports for documentation
+- Plan follow-up scans for identified areas of concern"""
+        
+        return {
+            "status": "success",
+            "summary": summary
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "summary": f"Unable to generate summary: {str(e)}",
+            "error": str(e)
+        }
 
 @router.post("/session/save")
 async def save_session():
