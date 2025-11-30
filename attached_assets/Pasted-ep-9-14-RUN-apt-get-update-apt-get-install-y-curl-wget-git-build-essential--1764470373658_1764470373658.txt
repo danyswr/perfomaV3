@@ -1,0 +1,246 @@
+ep 9/14 : RUN apt-get update && apt-get install -y     curl     wget     git     build-essential     libffi-dev     && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> cd7079be76ac
+Step 10/14 : COPY pyproject.toml uv.lock* ./
+ ---> 9a53f4c7a6ee
+Step 11/14 : RUN pip install uv && uv sync
+ ---> Running in b00ed81f98c5
+Collecting uv
+  Downloading uv-0.9.13-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (11 kB)
+Downloading uv-0.9.13-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (21.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21.7/21.7 MB 2.0 MB/s eta 0:00:00
+Installing collected packages: uv
+Successfully installed uv-0.9.13
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 24.0 -> 25.3
+[notice] To update, run: pip install --upgrade pip
+Using CPython 3.11.14 interpreter at: /usr/local/bin/python3
+Creating virtual environment at: .venv
+Resolved 77 packages in 1ms
+Downloading pydantic-core (2.0MiB)
+Downloading aiohttp (1.7MiB)
+Downloading sqlalchemy (3.2MiB)
+Downloading reportlab (1.9MiB)
+Downloading numpy (16.1MiB)
+Downloading pyphen (2.0MiB)
+Downloading pillow (6.7MiB)
+Downloading kiwisolver (1.4MiB)
+Downloading asyncpg (2.8MiB)
+Downloading matplotlib (8.3MiB)
+Downloading fonttools (4.7MiB)
+Downloading pandas (12.2MiB)
+Downloading brotli (1.4MiB)
+ Downloaded brotli
+ Downloaded kiwisolver
+ Downloaded aiohttp
+ Downloaded reportlab
+ Downloaded pyphen
+ Downloaded pydantic-core
+ Downloaded asyncpg
+ Downloaded sqlalchemy
+ Downloaded fonttools
+ Downloaded pillow
+ Downloaded matplotlib
+ Downloaded pandas
+ Downloaded numpy
+Prepared 74 packages in 29.79s
+Installed 74 packages in 104ms
+ + aiofiles==25.1.0
+ + aiohappyeyeballs==2.6.1
+ + aiohttp==3.13.2
+ + aiosignal==1.4.0
+ + aiosqlite==0.21.0
+ + annotated-doc==0.0.4
+ + annotated-types==0.7.0
+ + anthropic==0.75.0
+ + anyio==4.11.0
+ + asyncpg==0.31.0
+ + attrs==25.4.0
+ + brotli==1.2.0
+ + certifi==2025.11.12
+ + cffi==2.0.0
+ + charset-normalizer==3.4.4
+ + click==8.3.1
+ + contourpy==1.3.3
+ + cssselect2==0.8.0
+ + cycler==0.12.1
+ + distro==1.9.0
+ + docstring-parser==0.17.0
+ + fastapi==0.122.0
+ + fonttools==4.60.1
+ + frozenlist==1.8.0
+ + greenlet==3.2.4
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.11
+ + jinja2==3.1.6
+ + jiter==0.12.0
+ + kiwisolver==1.4.9
+ + markdown==3.10
+ + markupsafe==3.0.3
+ + matplotlib==3.10.7
+ + multidict==6.7.0
+ + numpy==2.3.5
+ + openai==2.8.1
+ + packaging==25.0
+ + pandas==2.3.3
+ + pillow==12.0.0
+ + propcache==0.4.1
+ + psutil==7.1.3
+ + pycparser==2.23
+ + pydantic==2.12.5
+ + pydantic-core==2.41.5
+ + pydantic-settings==2.12.0
+ + pydyf==0.11.0
+ + pyparsing==3.2.5
+ + pyphen==0.17.2
+ + python-dateutil==2.9.0.post0
+ + python-dotenv==1.2.1
+ + python-json-logger==4.0.0
+ + python-multipart==0.0.20
+ + pytz==2025.2
+ + reportlab==4.4.5
+ + requests==2.32.5
+ + six==1.17.0
+ + sniffio==1.3.1
+ + sqlalchemy==2.0.44
+ + starlette==0.50.0
+ + tinycss2==1.5.1
+ + tinyhtml5==2.0.0
+ + tqdm==4.67.1
+ + typing-extensions==4.15.0
+ + typing-inspection==0.4.2
+ + tzdata==2025.2
+ + urllib3==2.5.0
+ + uvicorn==0.38.0
+ + weasyprint==66.0
+ + webencodings==0.5.1
+ + websockets==15.0.1
+ + yarl==1.22.0
+ + zopfli==0.4.0
+ ---> Removed intermediate container b00ed81f98c5
+ ---> 21c4ed86e88f
+Step 12/14 : COPY backend/ .
+ ---> 7bcea1fdb33a
+Step 13/14 : EXPOSE 8000
+ ---> Running in c0b6fde648ad
+ ---> Removed intermediate container c0b6fde648ad
+ ---> 31994fe0ee1d
+Step 14/14 : CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Running in fab0eb8dd9ec
+ ---> Removed intermediate container fab0eb8dd9ec
+ ---> 546249d12b83
+Successfully built 546249d12b83
+Successfully tagged hack_backend:latest
+Building frontend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  423.8MB
+Step 1/6 : FROM node:20-alpine AS frontend-builder
+ ---> 16858294071a
+Step 2/6 : WORKDIR /app
+ ---> Using cache
+ ---> cc4e6d1068dd
+Step 3/6 : COPY package*.json ./
+ ---> Using cache
+ ---> e40f54d051dd
+Step 4/6 : RUN npm ci --legacy-peer-deps
+ ---> Using cache
+ ---> c6f1b90570e3
+Step 5/6 : COPY . .
+ ---> Using cache
+ ---> 8bc42ded5d3b
+Step 6/6 : RUN npm run build
+ ---> Using cache
+ ---> 0325a80eceb6
+Successfully built 0325a80eceb6
+Successfully tagged hack_frontend:latest
+Creating hack_postgres_1 ... done
+Creating hack_backend_1  ... done
+Creating hack_frontend_1 ... done
+Attaching to hack_postgres_1, hack_backend_1, hack_frontend_1
+postgres_1  | The files belonging to this database system will be owned by user "postgres".
+postgres_1  | This user must also own the server process.
+postgres_1  | 
+postgres_1  | The database cluster will be initialized with locale "en_US.utf8".
+postgres_1  | The default database encoding has accordingly been set to "UTF8".
+postgres_1  | The default text search configuration will be set to "english".
+postgres_1  | 
+postgres_1  | Data page checksums are disabled.
+postgres_1  | 
+postgres_1  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+postgres_1  | creating subdirectories ... ok
+postgres_1  | selecting dynamic shared memory implementation ... posix
+postgres_1  | selecting default max_connections ... 100
+postgres_1  | selecting default shared_buffers ... 128MB
+postgres_1  | selecting default time zone ... UTC
+postgres_1  | creating configuration files ... ok
+postgres_1  | running bootstrap script ... ok
+postgres_1  | performing post-bootstrap initialization ... sh: locale: not found
+postgres_1  | 2025-11-30 02:38:28.537 UTC [34] WARNING:  no usable system locales were found
+frontend_1  | 
+frontend_1  | > my-v0-project@0.1.0 start
+frontend_1  | > next start -H 0.0.0.0 -p 5000 -p 5000
+frontend_1  | 
+postgres_1  | ok
+frontend_1  |    ▲ Next.js 16.0.3
+frontend_1  |    - Local:         http://localhost:5000
+frontend_1  |    - Network:       http://0.0.0.0:5000
+frontend_1  | 
+frontend_1  |  ✓ Starting...
+postgres_1  | syncing data to disk ... ok
+postgres_1  | 
+postgres_1  | 
+postgres_1  | Success. You can now start the database server using:
+postgres_1  | 
+postgres_1  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+postgres_1  | 
+postgres_1  | initdb: warning: enabling "trust" authentication for local connections
+postgres_1  | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+postgres_1  | waiting for server to start....2025-11-30 02:38:29.485 UTC [40] LOG:  starting PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+postgres_1  | 2025-11-30 02:38:29.487 UTC [40] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2025-11-30 02:38:29.494 UTC [43] LOG:  database system was shut down at 2025-11-30 02:38:29 UTC
+postgres_1  | 2025-11-30 02:38:29.501 UTC [40] LOG:  database system is ready to accept connections
+postgres_1  |  done
+postgres_1  | server started
+frontend_1  |  ✓ Ready in 667ms
+postgres_1  | CREATE DATABASE
+postgres_1  | 
+postgres_1  | 
+postgres_1  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+postgres_1  | 
+postgres_1  | waiting for server to shut down...2025-11-30 02:38:29.664 UTC [40] LOG:  received fast shutdown request
+postgres_1  | .2025-11-30 02:38:29.666 UTC [40] LOG:  aborting any active transactions
+postgres_1  | 2025-11-30 02:38:29.673 UTC [40] LOG:  background worker "logical replication launcher" (PID 46) exited with exit code 1
+postgres_1  | 2025-11-30 02:38:29.673 UTC [41] LOG:  shutting down
+postgres_1  | 2025-11-30 02:38:29.674 UTC [41] LOG:  checkpoint starting: shutdown immediate
+postgres_1  | 2025-11-30 02:38:29.708 UTC [41] LOG:  checkpoint complete: wrote 921 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.017 s, sync=0.013 s, total=0.036 s; sync files=301, longest=0.002 s, average=0.001 s; distance=4239 kB, estimate=4239 kB
+postgres_1  | 2025-11-30 02:38:29.715 UTC [40] LOG:  database system is shut down
+postgres_1  |  done
+postgres_1  | server stopped
+postgres_1  | 
+postgres_1  | PostgreSQL init process complete; ready for start up.
+postgres_1  | 
+postgres_1  | 2025-11-30 02:38:29.800 UTC [1] LOG:  starting PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+postgres_1  | 2025-11-30 02:38:29.800 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres_1  | 2025-11-30 02:38:29.800 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres_1  | 2025-11-30 02:38:29.804 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2025-11-30 02:38:29.809 UTC [56] LOG:  database system was shut down at 2025-11-30 02:38:29 UTC
+postgres_1  | 2025-11-30 02:38:29.818 UTC [1] LOG:  database system is ready to accept connections
+backend_1   | 2025-11-30 02:38:30,577 - monitor.log - INFO - Logging system initialized
+backend_1   | INFO:     Started server process [11]
+backend_1   | INFO:     Waiting for application startup.
+backend_1   | INFO:     Application startup complete.
+backend_1   | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Exception in thread Thread-10:
+Traceback (most recent call last):
+  File "threading.py", line 926, in _bootstrap_inner
+  File "threading.py", line 870, in run
+  File "compose/cli/log_printer.py", line 202, in watch_events
+  File "compose/project.py", line 626, in yield_loop
+  File "compose/project.py", line 594, in build_container_event
+KeyError: 'id'

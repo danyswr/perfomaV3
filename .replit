@@ -1,0 +1,107 @@
+modules = ["python-3.11", "nodejs-20", "web", "bash"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["cairo", "ffmpeg-full", "fontconfig", "freetype", "ghostscript", "glib", "glibcLocales", "gobject-introspection", "gti", "gtk3", "harfbuzz", "libxcrypt", "pango", "pkg-config", "postgresql", "qhull", "tcl", "tk"]
+
+[userenv]
+
+[userenv.shared]
+LOG_DIR = "./logs"
+FINDINGS_DIR = "./findings"
+HOST = "0.0.0.0"
+PORT = "8000"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Application"
+
+[[workflows.workflow]]
+name = "Start Application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash run.sh"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
+
+[[ports]]
+localPort = 33233
+externalPort = 3002
+
+[[ports]]
+localPort = 34339
+externalPort = 9000
+
+[[ports]]
+localPort = 34473
+externalPort = 3001
+
+[[ports]]
+localPort = 38085
+externalPort = 3000
+
+[[ports]]
+localPort = 39165
+externalPort = 3003
+
+[[ports]]
+localPort = 40845
+externalPort = 6800
+
+[[ports]]
+localPort = 41333
+externalPort = 4200
+
+[[ports]]
+localPort = 42475
+externalPort = 8080
+
+[[ports]]
+localPort = 42677
+externalPort = 6000
+
+[[ports]]
+localPort = 43005
+externalPort = 8099
+
+[[ports]]
+localPort = 43549
+externalPort = 5173
+
+[[ports]]
+localPort = 44759
+externalPort = 8008
+
+[[ports]]
+localPort = 44885
+externalPort = 5000
+
+[[ports]]
+localPort = 46769
+externalPort = 8081
+
+[deployment]
+deploymentTarget = "vm"
+run = ["bash", "run.sh"]

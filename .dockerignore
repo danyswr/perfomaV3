@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+.pnpm-store
+__pycache__
+*.pyc
+.pythonlibs
+
+# Build outputs
+.next
+dist
+build
+
+# Logs and findings (mounted as volumes)
+logs/
+findings/
+*.log
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.md
+!README.md
+.replit
+replit.nix
