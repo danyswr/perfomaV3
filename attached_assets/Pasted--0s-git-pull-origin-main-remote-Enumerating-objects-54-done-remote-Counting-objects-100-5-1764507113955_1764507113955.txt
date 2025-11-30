@@ -1,0 +1,49 @@
+◄ 0s ◎ git pull origin main
+remote: Enumerating objects: 54, done.
+remote: Counting objects: 100% (54/54), done.
+remote: Compressing objects: 100% (7/7), done.
+remote: Total 37 (delta 30), reused 37 (delta 30), pack-reused 0 (from 0)
+Membongkar objek: 100% (37/37), 13.43 kibibita | 808.00 kibibita/detik, selesai.
+Dari https://github.com/danyswr/perfomaV3
+ * branch            main       -> FETCH_HEAD
+   ab015b9..8ab8152  main       -> origin/main
+Memperbarui ab015b9..8ab8152
+Fast-forward
+ .replit                                    |   2 +-
+ app/page.tsx                               | 533 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+ backend/agent/memory.py                    | 111 ++++++++++++++++++
+ backend/agent/worker.py                    |  11 +-
+ backend/server/api.py                      | 188 ++++++++++++++++++++++++++++++
+ components/dashboard/config-sidebar.tsx    |   2 +-
+ components/dashboard/findings-explorer.tsx | 166 +++++++++++++++++---------
+ lib/api.ts                                 |  82 +++++++++++++
+ replit.md                                  |   4 +
+ 9 files changed, 958 insertions(+), 141 deletions(-)
+                                                                                                                                       
+◄ 1s ◎ docker-compose up
+WARNING: The ANTHROPIC_API_KEY variable is not set. Defaulting to a blank string.
+WARNING: The OPENAI_API_KEY variable is not set. Defaulting to a blank string.
+Creating network "perfomav3_cybersec-network" with driver "bridge"
+Creating perfomav3_postgres_1 ... done
+Creating perfomav3_backend_1  ... done
+Creating perfomav3_frontend_1 ... done
+Attaching to perfomav3_postgres_1, perfomav3_backend_1, perfomav3_frontend_1
+postgres_1  | 
+postgres_1  | PostgreSQL Database directory appears to contain a database; Skipping initialization
+postgres_1  | 
+postgres_1  | 2025-11-30 12:45:44.575 UTC [1] LOG:  starting PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+postgres_1  | 2025-11-30 12:45:44.575 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres_1  | 2025-11-30 12:45:44.575 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres_1  | 2025-11-30 12:45:44.578 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2025-11-30 12:45:44.584 UTC [29] LOG:  database system was shut down at 2025-11-30 11:49:39 UTC
+postgres_1  | 2025-11-30 12:45:44.592 UTC [1] LOG:  database system is ready to accept connections
+frontend_1  | 
+frontend_1  | > my-v0-project@0.1.0 start
+frontend_1  | > next start -H 0.0.0.0 -p 5000 -p 5000 -H 0.0.0.0
+frontend_1  | 
+frontend_1  |    ▲ Next.js 16.0.3
+frontend_1  |    - Local:         http://localhost:5000
+frontend_1  |    - Network:       http://0.0.0.0:5000
+frontend_1  | 
+frontend_1  |  ✓ Starting...
+frontend_1  |  ✓ Ready in 329ms
