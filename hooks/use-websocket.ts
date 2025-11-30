@@ -5,6 +5,15 @@ import { useState, useEffect, useCallback, useRef } from "react"
 const getWsUrl = () => {
   if (typeof window !== 'undefined') {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    
+    // Try to get API URL from environment (set at build time)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    if (apiUrl) {
+      // Convert http/https to ws/wss and derive host from API URL
+      const apiHost = apiUrl.replace('http://', '').replace('https://', '')
+      return `${protocol.replace(':', '')}://${apiHost}/ws/live`
+    }
+    
     const host = window.location.host
     
     // In production (no port in URL), use the rewrites path
