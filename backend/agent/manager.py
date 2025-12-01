@@ -42,7 +42,9 @@ class AgentManager:
         rate_limit_rps: float = 1.0,
         execution_duration: Optional[int] = None,
         requested_tools: Optional[List[str]] = None,
-        allowed_tools_only: bool = False
+        allowed_tools_only: bool = False,
+        model_delay_ms: int = 0,
+        instruction_delay_ms: int = 0
     ) -> List[str]:
         """Create multiple agents for operation"""
         agent_ids = []
@@ -81,7 +83,9 @@ class AgentManager:
                 rate_limit_rps=rate_limit_rps,
                 execution_duration=execution_duration,
                 requested_tools=requested_tools or [],
-                allowed_tools_only=allowed_tools_only
+                allowed_tools_only=allowed_tools_only,
+                model_delay_ms=model_delay_ms,
+                instruction_delay_ms=instruction_delay_ms
             )
             
             self.agents[agent_id] = agent

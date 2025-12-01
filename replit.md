@@ -3,7 +3,14 @@
 ## Overview
 Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend and a Python FastAPI backend, leveraging multi-agent AI capabilities to enhance cybersecurity operations. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
 
-## Recent Updates (Nov 30, 2025 - Final)
+## Recent Updates (Dec 1, 2025)
+- **Configurable Delays**: Added `model_delay_ms` and `instruction_delay_ms` settings for configurable delays before AI model response and instruction execution
+- **Tool Restrictions Enhanced**: Backend worker enforces tool restrictions based on user-selected tools in mission config
+- **New Database Models**: Added `MissionConfig`, `AgentMemoryStore`, `AgentLogEntry`, and `ToolPermission` tables for persistent storage
+- **Docker Improvements**: Separate Dockerfiles for frontend/backend with proper BACKEND_URL routing for Docker network
+- **Mission Config Delay Settings**: Save and load mission configurations with delay timing controls
+
+## Previous Updates (Nov 30, 2025 - Final)
 - **Docker Connectivity Fixed**: Next.js config now respects `BACKEND_URL` env var for proper Docker network routing
 - **start.sh Permission Fixes**: Auto-clean logs/findings with `chmod 777` to prevent permission locks from sudo usage
 - **Replit Environment Support**: start.sh now handles both venv and Replit's native `.pythonlibs` Python environment

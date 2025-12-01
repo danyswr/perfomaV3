@@ -71,7 +71,9 @@ class AgentWorker:
         rate_limit_rps: float = 1.0,
         execution_duration: Optional[int] = None,
         requested_tools: Optional[List[str]] = None,
-        allowed_tools_only: bool = False
+        allowed_tools_only: bool = False,
+        model_delay_ms: int = 0,
+        instruction_delay_ms: int = 0
     ):
         self.agent_id = agent_id
         self.agent_number = agent_number
@@ -92,6 +94,8 @@ class AgentWorker:
         self.execution_duration = execution_duration
         self.requested_tools = requested_tools or []
         self.allowed_tools_only = allowed_tools_only
+        self.model_delay_ms = model_delay_ms
+        self.instruction_delay_ms = instruction_delay_ms
         self.execution_start_time: Optional[datetime] = None
         self.break_reason: Optional[str] = None
         
@@ -350,9 +354,21 @@ class AgentWorker:
         return elapsed_minutes >= self.execution_duration
     
     def _is_tool_allowed_by_user(self, cmd: str) -> bool:
-        """Check if tool is allowed based on user selection"""
-        if not self.allowed_tools_only or not self.requested_tools:
+        """Check if tool is allowed based on user selection
+        
+        When allowed_tools_only is True:
+        - If requested_tools is empty, block ALL tools (no tools allowed)
+        - If requested_tools has items, only allow those specific tools
+        
+        When allowed_tools_only is False:
+        - Allow all tools (default behavior)
+        """
+        if not self.allowed_tools_only:
             return True
+        
+        if not self.requested_tools:
+            return False
+        
         tool = cmd.split()[0] if cmd else ""
         if tool.startswith("RUN "):
             tool = tool[4:].split()[0]
@@ -429,6 +445,12 @@ class AgentWorker:
                         await self._broadcast_status_update()
                         continue
                     
+                    if self.instruction_delay_ms > 0:
+                        delay_secs = self.instruction_delay_ms / 1000.0
+                        self.last_execute = f"Instruction delay: {delay_secs:.1f}s..."
+                        await self._broadcast_status_update()
+                        await asyncio.sleep(delay_secs)
+                    
                     self.last_execute = f"Executing: {cmd[4:50]}..."
                     await self._broadcast_status_update()
                     try:
@@ -467,6 +489,13 @@ class AgentWorker:
                         {"model": self.model_name, "wait_time": wait_time}
                     )
                     await asyncio.sleep(wait_time)
+                
+                if self.model_delay_ms > 0:
+                    delay_secs = self.model_delay_ms / 1000.0
+                    await self._set_break_status(f"Model delay: {delay_secs:.1f}s...")
+                    self.last_execute = f"Model delay: {delay_secs:.1f}s..."
+                    await self._broadcast_status_update()
+                    await asyncio.sleep(delay_secs)
                 
                 start_time = time.time()
                 response = await self.model_router.generate(

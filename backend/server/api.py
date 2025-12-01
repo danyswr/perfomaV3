@@ -30,6 +30,8 @@ class TargetInput(BaseModel):
     execution_duration: Optional[int] = None  # minutes, None = unlimited
     requested_tools: List[str] = []  # priority tools
     allowed_tools_only: bool = False  # restrict to selected tools only
+    model_delay_ms: int = 0  # delay before model response in ms
+    instruction_delay_ms: int = 0  # delay before executing instruction in ms
 
 class CommandBatch(BaseModel):
     commands: Dict[str, str]  # {"1": "RUN nmap ...", "2": "RUN nikto ..."}
@@ -64,7 +66,9 @@ async def start_operation(target: TargetInput, background_tasks: BackgroundTasks
             rate_limit_rps=target.rate_limit_rps,
             execution_duration=target.execution_duration,
             requested_tools=target.requested_tools,
-            allowed_tools_only=target.allowed_tools_only
+            allowed_tools_only=target.allowed_tools_only,
+            model_delay_ms=target.model_delay_ms,
+            instruction_delay_ms=target.instruction_delay_ms
         )
         
         background_tasks.add_task(
@@ -80,7 +84,9 @@ async def start_operation(target: TargetInput, background_tasks: BackgroundTasks
                 "batch_size": target.batch_size,
                 "rate_limit_rps": target.rate_limit_rps,
                 "execution_duration": target.execution_duration,
-                "requested_tools": target.requested_tools
+                "requested_tools": target.requested_tools,
+                "model_delay_ms": target.model_delay_ms,
+                "instruction_delay_ms": target.instruction_delay_ms
             },
             "timestamp": datetime.now().isoformat()
         }
@@ -390,6 +396,8 @@ class SaveMissionConfigInput(BaseModel):
     execution_duration: Optional[int] = None
     requested_tools: List[str] = []
     allowed_tools_only: bool = False
+    model_delay_ms: int = 0
+    instruction_delay_ms: int = 0
 
 @router.post("/config/save")
 async def save_mission_config(config: SaveMissionConfigInput):
@@ -414,6 +422,8 @@ async def save_mission_config(config: SaveMissionConfigInput):
             "execution_duration": config.execution_duration,
             "requested_tools": config.requested_tools,
             "allowed_tools_only": config.allowed_tools_only,
+            "model_delay_ms": config.model_delay_ms,
+            "instruction_delay_ms": config.instruction_delay_ms,
             "saved_at": datetime.now().isoformat()
         }
         

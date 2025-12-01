@@ -47,8 +47,12 @@ class Mission(Base):
     execution_duration = Column(Integer, nullable=True)
     
     requested_tools = Column(JSON, default=list)
+    allowed_tools_only = Column(Boolean, default=False)
     stealth_options = Column(JSON, default=dict)
     capabilities = Column(JSON, default=dict)
+    
+    model_delay_ms = Column(Integer, default=0)
+    instruction_delay_ms = Column(Integer, default=0)
     
     status = Column(SQLEnum(MissionStatus), default=MissionStatus.PENDING)
     started_at = Column(DateTime, nullable=True)
@@ -227,3 +231,100 @@ class MissionSummary(Base):
     created_at = Column(DateTime, server_default=func.now())
     
     mission = relationship("Mission", back_populates="summaries")
+
+
+class MissionConfig(Base):
+    """Saved mission configurations for reuse"""
+    __tablename__ = "mission_configs"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    config_id = Column(String(64), unique=True, nullable=False, index=True)
+    name = Column(String(256), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    target = Column(String(512), nullable=True)
+    category = Column(String(32), default="domain")
+    custom_instruction = Column(Text, nullable=True)
+    stealth_mode = Column(Boolean, default=False)
+    aggressive_mode = Column(Boolean, default=False)
+    model_name = Column(String(128), default="anthropic/claude-3.5-sonnet")
+    num_agents = Column(Integer, default=3)
+    os_type = Column(String(16), default="linux")
+    
+    batch_size = Column(Integer, default=20)
+    rate_limit_rps = Column(Float, default=1.0)
+    execution_duration = Column(Integer, nullable=True)
+    
+    requested_tools = Column(JSON, default=list)
+    allowed_tools_only = Column(Boolean, default=False)
+    stealth_options = Column(JSON, default=dict)
+    capabilities = Column(JSON, default=dict)
+    
+    model_delay_ms = Column(Integer, default=0)
+    instruction_delay_ms = Column(Integer, default=0)
+    
+    is_default = Column(Boolean, default=False)
+    use_count = Column(Integer, default=0)
+    
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class AgentMemoryStore(Base):
+    """Persistent storage for agent memory/context"""
+    __tablename__ = "agent_memory_store"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent_id = Column(String(64), nullable=False, index=True)
+    mission_id = Column(String(64), nullable=True, index=True)
+    
+    memory_type = Column(String(32), nullable=False)
+    key = Column(String(256), nullable=False)
+    value = Column(Text, nullable=False)
+    
+    priority = Column(Integer, default=5)
+    ttl_seconds = Column(Integer, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class AgentLogEntry(Base):
+    """Real-time agent log entries for streaming"""
+    __tablename__ = "agent_log_entries"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    log_id = Column(String(64), unique=True, nullable=False, index=True)
+    agent_id = Column(String(64), nullable=False, index=True)
+    mission_id = Column(String(64), nullable=True, index=True)
+    
+    level = Column(String(16), default="info")
+    category = Column(String(32), default="general")
+    message = Column(Text, nullable=False)
+    
+    command = Column(Text, nullable=True)
+    output = Column(Text, nullable=True)
+    
+    tool_used = Column(String(64), nullable=True)
+    execution_time_ms = Column(Integer, default=0)
+    tokens_used = Column(Integer, default=0)
+    
+    metadata = Column(JSON, default=dict)
+    
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class ToolPermission(Base):
+    """Tool permissions per mission/agent"""
+    __tablename__ = "tool_permissions"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mission_id = Column(String(64), nullable=True, index=True)
+    agent_id = Column(String(64), nullable=True, index=True)
+    
+    tool_name = Column(String(64), nullable=False)
+    category = Column(String(32), nullable=True)
+    is_allowed = Column(Boolean, default=True)
+    
+    created_at = Column(DateTime, server_default=func.now())

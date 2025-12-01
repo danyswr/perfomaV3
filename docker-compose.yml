@@ -1,45 +1,6 @@
 version: '3.8'
 
 services:
-  frontend:
-    build:
-      context: .
-      target: frontend-builder
-      args:
-        - BACKEND_URL=http://backend:8000
-        - NEXT_PUBLIC_API_URL=http://backend:8000
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
-      - BACKEND_URL=http://backend:8000
-    command: npm run start -- -p 5000 -H 0.0.0.0
-    depends_on:
-      - backend
-      - postgres
-    networks:
-      - cybersec-network
-
-  backend:
-    build:
-      context: .
-      target: backend
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/cybersec
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    volumes:
-      - ./findings:/app/backend/findings
-      - ./logs:/app/backend/logs
-    depends_on:
-      - postgres
-    networks:
-      - cybersec-network
-
   postgres:
     image: postgres:15-alpine
     environment:
@@ -58,31 +19,62 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  backend:
     build:
       context: .
-      target: production
+      dockerfile: Dockerfile.backend
     ports:
-      - "5000:5000"
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/cybersec
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - HOST=0.0.0.0
+      - PORT=8000
     volumes:
       - ./findings:/app/findings
       - ./logs:/app/logs
+      - agent_memory:/app/data
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - cybersec-network
-    profiles:
-      - full
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - NEXT_PUBLIC_API_URL=http://backend:8000
+        - NEXT_PUBLIC_WS_URL=ws://backend:8000
+        - BACKEND_URL=http://backend:8000
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - HOSTNAME=0.0.0.0
+      - PORT=5000
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - cybersec-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  agent_memory:
 
 networks:
   cybersec-network:
