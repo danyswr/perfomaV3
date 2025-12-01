@@ -269,6 +269,8 @@ function MissionSummaryDialog({
   const [generating, setGenerating] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [progressStage, setProgressStage] = useState("");
+  const [savingToFindings, setSavingToFindings] = useState(false);
 
   useEffect(() => {
     if (open && !summary) {
@@ -280,9 +282,23 @@ function MissionSummaryDialog({
     setGenerating(true);
     setProgress(0);
     
+    const stages = [
+      { progress: 15, text: "Collecting agent logs..." },
+      { progress: 30, text: "Analyzing execution history..." },
+      { progress: 50, text: "Processing findings data..." },
+      { progress: 70, text: "Generating AI summary..." },
+      { progress: 85, text: "Formatting report..." },
+      { progress: 95, text: "Finalizing..." },
+    ];
+    
+    let stageIndex = 0;
     const progressInterval = setInterval(() => {
-      setProgress(prev => Math.min(prev + 10, 90));
-    }, 500);
+      if (stageIndex < stages.length) {
+        setProgress(stages[stageIndex].progress);
+        setProgressStage(stages[stageIndex].text);
+        stageIndex++;
+      }
+    }, 600);
 
     try {
       const response = await api.generateMissionSummary({
@@ -295,71 +311,168 @@ function MissionSummaryDialog({
 
       clearInterval(progressInterval);
       setProgress(100);
+      setProgressStage("Complete!");
 
       if (response.data?.summary) {
         setSummary(response.data.summary);
       } else {
-        setSummary(`## Mission Summary\n\n**Target:** ${target}\n**Duration:** ${executionTime}\n**Status:** ${reason}\n\n- Processed ${agentLogs.length} log entries\n- Found ${findings.length} items\n\nPlease review the Findings Explorer for detailed results.`);
+        const severityCounts = {
+          critical: findings.filter((f: any) => f.severity === 'critical').length,
+          high: findings.filter((f: any) => f.severity === 'high').length,
+          medium: findings.filter((f: any) => f.severity === 'medium').length,
+          low: findings.filter((f: any) => f.severity === 'low').length,
+          info: findings.filter((f: any) => f.severity === 'info').length,
+        };
+        
+        setSummary(`# Mission Summary Report
+
+## Overview
+- **Target:** ${target}
+- **Duration:** ${executionTime}
+- **Status:** ${reason === 'user_stopped' ? 'Stopped by user' : reason === 'completed' ? 'Completed' : reason}
+- **Total Findings:** ${findings.length}
+
+## Severity Breakdown
+- Critical: ${severityCounts.critical}
+- High: ${severityCounts.high}
+- Medium: ${severityCounts.medium}
+- Low: ${severityCounts.low}
+- Info: ${severityCounts.info}
+
+## Agent Activity
+- Total log entries processed: ${agentLogs.length}
+
+## Recommendations
+Please review the Findings Explorer for detailed vulnerability information and remediation steps.`);
       }
     } catch {
       clearInterval(progressInterval);
       setProgress(100);
-      setSummary(`Unable to generate AI summary. Please review the findings manually.`);
+      setProgressStage("Complete!");
+      setSummary(`# Mission Summary
+
+Unable to generate detailed AI summary. 
+
+**Target:** ${target}
+**Duration:** ${executionTime}
+**Findings:** ${findings.length}
+
+Please review the Findings Explorer for detailed results.`);
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleSaveToFindings = async () => {
+    if (!summary) return;
+    
+    setSavingToFindings(true);
+    try {
+      await api.saveFindingsSummary({
+        summary: summary,
+        target: target,
+        execution_time: executionTime,
+      });
+      toast.success("Summary saved to findings!");
+    } catch {
+      toast.error("Failed to save summary");
+    } finally {
+      setSavingToFindings(false);
     }
   };
 
   const handleClose = () => {
     setSummary(null);
     setProgress(0);
+    setProgressStage("");
     onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-primary" />
+      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+        <DialogHeader className="shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             Mission Summary
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           {generating ? (
-            <div className="space-y-4 py-8">
+            <div className="space-y-4 py-6 sm:py-8">
               <div className="text-center">
-                <Brain className="w-12 h-12 mx-auto mb-4 text-primary animate-pulse" />
-                <p className="text-sm text-muted-foreground mb-4">
-                  AI is analyzing mission data and generating summary...
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4">
+                  <Brain className="w-full h-full text-primary animate-pulse" />
+                  <div className="absolute inset-0 border-4 border-primary/20 rounded-full animate-ping" />
+                </div>
+                <p className="text-sm font-medium mb-2">
+                  Analyzing Mission Data
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {progressStage || "Initializing..."}
                 </p>
               </div>
-              <Progress value={progress} className="w-full" />
-              <p className="text-xs text-center text-muted-foreground">
-                Processing {agentLogs.length} logs and {findings.length} findings
-              </p>
+              <div className="space-y-2">
+                <Progress value={progress} className="w-full h-3" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{progress}%</span>
+                  <span>Processing {findings.length} findings</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-4">
+                <div className="text-center p-2 sm:p-3 bg-muted/30 rounded-lg">
+                  <p className="text-lg sm:text-xl font-bold text-primary">{findings.length}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Findings</p>
+                </div>
+                <div className="text-center p-2 sm:p-3 bg-muted/30 rounded-lg">
+                  <p className="text-lg sm:text-xl font-bold text-cyan-500">{agentLogs.length}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Log Entries</p>
+                </div>
+                <div className="text-center p-2 sm:p-3 bg-muted/30 rounded-lg">
+                  <p className="text-lg sm:text-xl font-bold text-yellow-500">{executionTime}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Duration</p>
+                </div>
+              </div>
             </div>
           ) : summary ? (
-            <ScrollArea className="h-[400px]">
-              <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-lg">
-                <pre className="whitespace-pre-wrap text-sm font-sans">{summary}</pre>
+            <ScrollArea className="h-[50vh] sm:h-[400px]">
+              <div className="prose prose-sm dark:prose-invert max-w-none p-3 sm:p-4 bg-muted/30 rounded-lg">
+                <pre className="whitespace-pre-wrap text-xs sm:text-sm font-sans leading-relaxed">{summary}</pre>
               </div>
             </ScrollArea>
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={handleClose}>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t shrink-0">
+          <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
             Close
           </Button>
           {summary && (
-            <Button onClick={() => {
-              navigator.clipboard.writeText(summary);
-              toast.success("Summary copied to clipboard");
-            }}>
-              Copy Summary
-            </Button>
+            <>
+              <Button 
+                variant="outline"
+                onClick={handleSaveToFindings}
+                disabled={savingToFindings}
+                className="w-full sm:w-auto"
+              >
+                {savingToFindings ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-2" />
+                )}
+                Save to Findings
+              </Button>
+              <Button 
+                onClick={() => {
+                  navigator.clipboard.writeText(summary);
+                  toast.success("Summary copied to clipboard");
+                }}
+                className="w-full sm:w-auto"
+              >
+                Copy Summary
+              </Button>
+            </>
           )}
         </div>
       </DialogContent>
@@ -607,6 +720,8 @@ export default function Dashboard() {
     executionDuration: null,
     requestedTools: [],
     allowedToolsOnly: false,
+    instructionDelayMs: 0,
+    modelDelayMs: 0,
   });
   const [customModelId, setCustomModelId] = useState("");
   const [testingApi, setTestingApi] = useState(false);
@@ -693,6 +808,8 @@ export default function Dashboard() {
       executionDuration: savedConfig.execution_duration || null,
       requestedTools: savedConfig.requested_tools || [],
       allowedToolsOnly: savedConfig.allowed_tools_only ?? false,
+      instructionDelayMs: savedConfig.instruction_delay_ms || 0,
+      modelDelayMs: savedConfig.model_delay_ms || 0,
     });
   }, []);
 
@@ -1383,14 +1500,84 @@ export default function Dashboard() {
                     </p>
                   </div>
 
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-cyan-500" />
+                        Instruction Delay
+                      </Label>
+                      <Badge variant="secondary">
+                        {config.instructionDelayMs === 0 
+                          ? "No delay" 
+                          : `${(config.instructionDelayMs / 1000).toFixed(1)}s`}
+                      </Badge>
+                    </div>
+                    <Slider
+                      value={[config.instructionDelayMs]}
+                      onValueChange={(v) =>
+                        setConfig({ ...config, instructionDelayMs: v[0] })
+                      }
+                      min={0}
+                      max={10000}
+                      step={500}
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      Delay between each agent instruction (0-10 seconds)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium flex items-center gap-2">
+                        <Timer className="w-4 h-4 text-yellow-500" />
+                        Model Response Delay
+                      </Label>
+                      <Badge variant="secondary">
+                        {config.modelDelayMs === 0 
+                          ? "No delay" 
+                          : `${(config.modelDelayMs / 1000).toFixed(1)}s`}
+                      </Badge>
+                    </div>
+                    <Slider
+                      value={[config.modelDelayMs]}
+                      onValueChange={(v) =>
+                        setConfig({ ...config, modelDelayMs: v[0] })
+                      }
+                      min={0}
+                      max={5000}
+                      step={250}
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      Delay before model generates response (0-5 seconds)
+                    </p>
+                  </div>
+
                   <div className="border-t border-border pt-4 space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
                       <Wrench className="w-4 h-4 text-primary" />
-                      Priority Tools Request
+                      Allowed Tools Configuration
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Specify tools that the AI agent should prioritize.
+                      Specify which tools the AI agent is allowed to use.
                     </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium flex items-center gap-2 text-destructive">
+                        <Shield className="w-4 h-4" />
+                        Strict Mode (ONLY Allowed Tools)
+                      </Label>
+                      <p className="text-[10px] text-muted-foreground">
+                        When enabled, agent can ONLY use tools you specify below. All other tools will be blocked.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={config.allowedToolsOnly}
+                      onCheckedChange={(checked) =>
+                        setConfig({ ...config, allowedToolsOnly: checked })
+                      }
+                    />
                   </div>
 
                   <div className="flex gap-2">

@@ -74,6 +74,8 @@ export function useMission() {
           execution_duration: config.executionDuration,
           requested_tools: config.requestedTools,
           allowed_tools_only: config.allowedToolsOnly,
+          instruction_delay_ms: config.instructionDelayMs || 0,
+          model_delay_ms: config.modelDelayMs || 0,
         })
 
         if (response.error) {

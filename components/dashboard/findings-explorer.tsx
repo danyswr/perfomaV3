@@ -179,15 +179,15 @@ function FileViewer({ file, content, loading, onClose }: {
 
   return (
     <Dialog open={!!file} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-[90vw] w-[900px] max-h-[85vh] flex flex-col overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden p-3 sm:p-6">
         <DialogHeader className="shrink-0">
-          <DialogTitle className="flex items-center gap-2 pr-8">
+          <DialogTitle className="flex items-center gap-2 pr-8 text-sm sm:text-base">
             {getFileIcon(file.type)}
-            <span className="truncate flex-1 min-w-0">{file.name}</span>
-            <Badge variant="outline" className="text-xs uppercase shrink-0">{file.type}</Badge>
+            <span className="truncate flex-1 min-w-0 text-xs sm:text-sm">{file.name}</span>
+            <Badge variant="outline" className="text-[10px] sm:text-xs uppercase shrink-0">{file.type}</Badge>
           </DialogTitle>
         </DialogHeader>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground pb-2 border-b shrink-0 flex-wrap">
+        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground pb-2 border-b shrink-0 flex-wrap">
           <span className="flex items-center gap-1">
             <HardDrive className="w-3 h-3" />
             {formatFileSize(file.size)}
@@ -197,7 +197,7 @@ function FileViewer({ file, content, loading, onClose }: {
             {formatDate(file.modified)}
           </span>
           {file.target && (
-            <Badge variant="secondary" className="text-[10px]">Target: {file.target}</Badge>
+            <Badge variant="secondary" className="text-[9px] sm:text-[10px]">Target: {file.target}</Badge>
           )}
         </div>
         <div className="flex-1 overflow-hidden min-h-0">

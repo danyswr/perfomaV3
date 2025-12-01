@@ -61,6 +61,8 @@ export const api = {
     execution_duration?: number | null
     requested_tools?: string[]
     allowed_tools_only?: boolean
+    instruction_delay_ms?: number
+    model_delay_ms?: number
   }) {
     try {
       const res = await fetch(`${API_BASE}/api/start`, {
@@ -382,6 +384,23 @@ export const api = {
       return handleResponse<{ status: string; summary: string }>(res)
     } catch {
       return { error: "Cannot generate summary" }
+    }
+  },
+
+  async saveFindingsSummary(data: {
+    summary: string
+    target: string
+    execution_time: string
+  }) {
+    try {
+      const res = await fetch(`${API_BASE}/api/findings/summary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      return handleResponse<{ status: string; filename: string }>(res)
+    } catch {
+      return { error: "Cannot save summary" }
     }
   },
 

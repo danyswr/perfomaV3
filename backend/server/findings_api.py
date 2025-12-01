@@ -251,3 +251,37 @@ def start_findings_watcher():
     global _watch_task
     if _watch_task is None or _watch_task.done():
         _watch_task = asyncio.create_task(watch_findings_directory())
+
+class SummaryInput(BaseModel):
+    summary: str
+    target: str
+    execution_time: str
+
+@router.post("/summary")
+async def save_findings_summary(data: SummaryInput):
+    try:
+        findings_dir = Path(settings.FINDINGS_DIR)
+        findings_dir.mkdir(parents=True, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_target = "".join(c if c.isalnum() or c in "._-" else "_" for c in data.target[:30])
+        filename = f"mission_summary_{safe_target}_{timestamp}.md"
+        
+        summary_content = f"""# Mission Summary Report
+
+**Generated:** {datetime.now().isoformat()}
+**Target:** {data.target}
+**Execution Time:** {data.execution_time}
+
+---
+
+{data.summary}
+"""
+        
+        file_path = findings_dir / filename
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(summary_content)
+        
+        return {"status": "saved", "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

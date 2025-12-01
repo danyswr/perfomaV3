@@ -16,6 +16,8 @@ export interface MissionConfig {
   customDurationMinutes?: number
   requestedTools: string[]
   allowedToolsOnly: boolean
+  instructionDelayMs: number
+  modelDelayMs: number
 }
 
 export type ExecutionDuration = 5 | 10 | 15 | 20 | 30 | 60 | 120 | "custom" | null
