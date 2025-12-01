@@ -1,4 +1,7 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+// Use relative API paths for Docker compatibility - rewrites handle routing to backend
+const API_BASE = typeof window !== 'undefined' 
+  ? (window.location.origin)
+  : ""
 
 export interface ApiResponse<T> {
   data?: T
