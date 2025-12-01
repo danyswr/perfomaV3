@@ -3,12 +3,25 @@
 ## Overview
 Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend and a Python FastAPI backend, leveraging multi-agent AI capabilities to enhance cybersecurity operations. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
 
-## Recent Updates (Dec 1, 2025)
+## Recent Updates (Dec 1, 2025 - Final)
 - **Configurable Delays**: Added `model_delay_ms` and `instruction_delay_ms` settings for configurable delays before AI model response and instruction execution
+  - Model delay: Sleep before calling AI model API (useful for rate limiting)
+  - Instruction delay: Sleep before executing tool commands (useful for simulating slower execution)
 - **Tool Restrictions Enhanced**: Backend worker enforces tool restrictions based on user-selected tools in mission config
-- **New Database Models**: Added `MissionConfig`, `AgentMemoryStore`, `AgentLogEntry`, and `ToolPermission` tables for persistent storage
-- **Docker Improvements**: Separate Dockerfiles for frontend/backend with proper BACKEND_URL routing for Docker network
-- **Mission Config Delay Settings**: Save and load mission configurations with delay timing controls
+  - When `allowed_tools_only=True` and `requested_tools` is empty, ALL tools are blocked
+  - When `allowed_tools_only=True` with tools specified, only those tools are allowed
+- **New Database Models**: Added for persistent storage
+  - `MissionConfig`: Reusable mission configurations with delay settings
+  - `AgentMemoryStore`: Database-backed agent memory (more efficient than in-memory)
+  - `AgentLogEntry`: Real-time agent log entries for streaming
+  - `ToolPermission`: Tool permissions per mission/agent
+- **Docker Improvements**: Complete Docker setup ready for deployment
+  - Separate Dockerfiles for frontend/backend with proper build optimization
+  - `BACKEND_URL` routing for Docker network service discovery
+  - Health checks for postgres, backend, and frontend services
+  - Volume mounts for findings, logs, and agent memory persistence
+- **Mission Config Delay Settings**: Fully integrated delay timing in mission config save/load
+- **Fixed Dependencies**: Added missing `react-is` dependency for recharts module
 
 ## Previous Updates (Nov 30, 2025 - Final)
 - **Docker Connectivity Fixed**: Next.js config now respects `BACKEND_URL` env var for proper Docker network routing
