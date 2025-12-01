@@ -130,17 +130,14 @@ echo -e "\n${BLUE}[*] Freeing up ports...${NC}"
 kill_port $BACKEND_PORT
 kill_port $FRONTEND_PORT
 
-# Backend Setup - Handle both venv and Replit's .pythonlibs
+# Backend Setup - Handle both venv and Replit's environment
 echo -e "\n${BLUE}[*] Activating Python environment...${NC}"
 if [ -d "$BACKEND_DIR/venv" ]; then
     source $BACKEND_DIR/venv/bin/activate
     echo -e "${GREEN}[✓] Python venv activated${NC}"
-elif [ -d ".pythonlibs/bin" ]; then
-    # Replit's native python environment
-    echo -e "${GREEN}[✓] Using Replit Python environment${NC}"
 else
-    echo -e "${RED}[✗] Python environment not found${NC}"
-    exit 1
+    # Replit environment (no venv needed - packages installed globally)
+    echo -e "${GREEN}[✓] Using Replit Python environment${NC}"
 fi
 
 # Node Setup
@@ -158,10 +155,8 @@ chmod 777 logs findings
 
 # --- START BACKEND ---
 echo -e "\n${BLUE}[*] Starting Backend Server on port $BACKEND_PORT...${NC}"
-cd $BACKEND_DIR
-python main.py > ../logs/backend.log 2>&1 &
+python $BACKEND_DIR/main.py > logs/backend.log 2>&1 &
 BACKEND_PID=$!
-cd ..
 
 echo -e "${YELLOW}  [*] Waiting for backend to initialize...${NC}"
 for i in {1..20}; do
