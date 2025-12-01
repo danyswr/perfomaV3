@@ -1,0 +1,83 @@
+tgres_1  | 
+postgres_1  | Success. You can now start the database server using:
+postgres_1  | 
+postgres_1  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+postgres_1  | 
+postgres_1  | initdb: warning: enabling "trust" authentication for local connections
+postgres_1  | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+postgres_1  | waiting for server to start....2025-12-01 13:52:32.217 UTC [41] LOG:  starting PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+postgres_1  | 2025-12-01 13:52:32.222 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2025-12-01 13:52:32.226 UTC [44] LOG:  database system was shut down at 2025-12-01 13:52:32 UTC
+postgres_1  | 2025-12-01 13:52:32.232 UTC [41] LOG:  database system is ready to accept connections
+postgres_1  |  done
+postgres_1  | server started
+postgres_1  | CREATE DATABASE
+postgres_1  | 
+postgres_1  | 
+postgres_1  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+postgres_1  | 
+postgres_1  | waiting for server to shut down....2025-12-01 13:52:32.416 UTC [41] LOG:  received fast shutdown request
+postgres_1  | 2025-12-01 13:52:32.418 UTC [41] LOG:  aborting any active transactions
+postgres_1  | 2025-12-01 13:52:32.424 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+postgres_1  | 2025-12-01 13:52:32.424 UTC [42] LOG:  shutting down
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/findings/logs HTTP/1.1" 200 OK
+postgres_1  | 2025-12-01 13:52:32.425 UTC [42] LOG:  checkpoint starting: shutdown immediate
+postgres_1  | 2025-12-01 13:52:32.456 UTC [42] LOG:  checkpoint complete: wrote 921 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=0.012 s, total=0.032 s; sync files=301, longest=0.002 s, average=0.001 s; distance=4239 kB, estimate=4239 kB
+postgres_1  | 2025-12-01 13:52:32.464 UTC [41] LOG:  database system is shut down
+postgres_1  |  done
+postgres_1  | server stopped
+postgres_1  | 
+postgres_1  | PostgreSQL init process complete; ready for start up.
+postgres_1  | 
+postgres_1  | 2025-12-01 13:52:32.554 UTC [1] LOG:  starting PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+postgres_1  | 2025-12-01 13:52:32.555 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres_1  | 2025-12-01 13:52:32.555 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres_1  | 2025-12-01 13:52:32.559 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres_1  | 2025-12-01 13:52:32.564 UTC [57] LOG:  database system was shut down at 2025-12-01 13:52:32 UTC
+postgres_1  | 2025-12-01 13:52:32.570 UTC [1] LOG:  database system is ready to accept connections
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/resources HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/resources HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     127.0.0.1:58234 - "GET / HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48276 - "GET /api/agents HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48284 - "GET /api/resources HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48292 - "GET /api/resources HTTP/1.1" 200 OK
+frontend_1  | 
+frontend_1  | > my-v0-project@0.1.0 start
+frontend_1  | > next start -H 0.0.0.0 -p 5000
+frontend_1  | 
+frontend_1  |    ▲ Next.js 16.0.3
+frontend_1  |    - Local:         http://localhost:5000
+frontend_1  |    - Network:       http://0.0.0.0:5000
+frontend_1  | 
+frontend_1  |  ✓ Starting...
+frontend_1  |  ✓ Ready in 474ms
+backend_1   | INFO:     172.18.0.1:48284 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48292 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/findings HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48284 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48292 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/resources HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/resources HTTP/1.1" 200 OK
+Exception in thread Thread-10:
+Traceback (most recent call last):
+  File "threading.py", line 926, in _bootstrap_inner
+  File "threading.py", line 870, in run
+  File "compose/cli/log_printer.py", line 202, in watch_events
+  File "compose/project.py", line 626, in yield_loop
+  File "compose/project.py", line 594, in build_container_event
+KeyError: 'id'
+
+backend_1   | INFO:     172.18.0.1:48284 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48292 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/agents HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/agents HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48284 - "GET /api/findings/explorer HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60058 - "GET /api/resources HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:48292 - "GET /api/findings/logs HTTP/1.1" 200 OK
+backend_1   | INFO:     172.18.0.1:60070 - "GET /api/resources HTTP/1.1" 200 OK
