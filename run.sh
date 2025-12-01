@@ -13,7 +13,7 @@ cd ..
 sleep 3
 
 echo "🚀 Starting Frontend on 0.0.0.0:5000..."
-npm run dev > logs/frontend.log 2>&1 &
+NODE_OPTIONS="--max-old-space-size=4096" npm run dev --  --webpack > logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 
 cleanup() {
