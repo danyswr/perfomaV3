@@ -6,6 +6,44 @@ import (
         "github.com/gofiber/fiber/v2"
 )
 
+type CreateAgentRequest struct {
+        Target            string `json:"target"`
+        Category          string `json:"category"`
+        CustomInstruction string `json:"custom_instruction"`
+        StealthMode       bool   `json:"stealth_mode"`
+        AggressiveMode    bool   `json:"aggressive_mode"`
+        ModelName         string `json:"model_name"`
+}
+
+func CreateAgent(c *fiber.Ctx) error {
+        var req CreateAgentRequest
+        if err := c.BodyParser(&req); err != nil {
+                req = CreateAgentRequest{}
+        }
+
+        modelName := req.ModelName
+        if modelName == "" {
+                modelName = "openai/gpt-4-turbo"
+        }
+
+        agent := models.Manager.CreateAgent(
+                "Agent",
+                "security-scanner",
+                req.Target,
+                modelName,
+        )
+
+        if req.Target != "" {
+                models.Manager.UpdateAgentStatus(agent.ID, models.AgentStatusRunning)
+        }
+
+        return c.JSON(fiber.Map{
+                "status":   "created",
+                "agent_id": agent.ID,
+                "agent":    agent,
+        })
+}
+
 func GetAgents(c *fiber.Ctx) error {
         agents := models.Manager.GetAllAgents()
         return c.JSON(fiber.Map{

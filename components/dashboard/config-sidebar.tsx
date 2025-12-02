@@ -121,6 +121,8 @@ export function ConfigSidebar({ open, onOpenChange, onStartMission, missionActiv
     executionDuration: null,
     requestedTools: [],
     allowedToolsOnly: false,
+    instructionDelayMs: 0,
+    modelDelayMs: 0,
   })
   const [customDurationMinutes, setCustomDurationMinutes] = useState(30)
   const [customDurationInput, setCustomDurationInput] = useState("30")
@@ -348,8 +350,8 @@ export function ConfigSidebar({ open, onOpenChange, onStartMission, missionActiv
                           </div>
                         </div>
                         <Switch
-                          checked={config.aggressiveMode}
-                          onCheckedChange={(checked) => setConfig({ ...config, aggressiveMode: checked })}
+                          checked={config.aggressiveLevel > 2}
+                          onCheckedChange={(checked) => setConfig({ ...config, aggressiveLevel: checked ? 5 : 1 })}
                         />
                       </div>
                     </div>

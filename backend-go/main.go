@@ -71,10 +71,18 @@ func main() {
                 api.Post("/start", handlers.StartOperation)
 
                 api.Get("/agents", handlers.GetAgents)
+                api.Post("/agents", handlers.CreateAgent)
                 api.Get("/agents/:id", handlers.GetAgent)
                 api.Delete("/agents/:id", handlers.DeleteAgent)
                 api.Post("/agents/:id/pause", handlers.PauseAgent)
                 api.Post("/agents/:id/resume", handlers.ResumeAgent)
+
+                api.Post("/config", handlers.SaveConfig)
+                api.Get("/config", handlers.GetConfigs)
+                api.Get("/config/:id", handlers.GetConfig)
+
+                api.Post("/models/test", handlers.TestModel)
+                api.Post("/session/save", handlers.SaveSession)
 
                 api.Get("/resources", handlers.GetResources)
 

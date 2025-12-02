@@ -167,6 +167,10 @@ function ResourceBar({ icon: Icon, label, value, unit, color, textColor, max = 1
   const isNetwork = unit === "KB/s"
   const displayValue = isNetwork ? formatNetworkValue(value) : null
 
+  const formattedValue = isNetwork && displayValue 
+    ? `${displayValue.display}${displayValue.unit}` 
+    : `${Math.round(value)}${unit}`
+
   return (
     <div className="p-3 rounded-lg bg-muted/30 space-y-2">
       <div className="flex items-center justify-between">
@@ -175,7 +179,7 @@ function ResourceBar({ icon: Icon, label, value, unit, color, textColor, max = 1
           <span className="text-xs text-muted-foreground">{label}</span>
         </div>
         <span className={`text-sm font-mono font-medium ${textColor}`}>
-          {isNetwork && displayValue ? `${displayValue.display}${displayValue.unit}` : `${value}${unit}`}
+          {formattedValue}
         </span>
       </div>
       <Progress value={percentage} className={`h-1.5 ${color}`} />
