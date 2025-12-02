@@ -1,14 +1,12 @@
 #!/bin/bash
 
-# Simple start script for Replit
 set -e
 
-# Ensure we're in the workspace directory
 cd /home/runner/workspace
 
 echo "Starting Performa - Autonomous CyberSec AI Agent System..."
+echo "=============================================="
 
-# Create .env if it doesn't exist
 if [ ! -f ".env" ]; then
     echo "Creating default .env file..."
     cat > .env << 'ENVFILE'
@@ -17,32 +15,43 @@ LOG_DIR=./logs
 FINDINGS_DIR=./findings
 HOST=0.0.0.0
 PORT=8000
+BRAIN_PORT=8001
+BRAIN_SERVICE_URL=http://localhost:8001
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_WS_URL=ws://localhost:8000
 ENVFILE
 fi
 
-# Create directories
-mkdir -p logs findings
-chmod 777 logs findings
+mkdir -p logs findings agent-brain/knowledge
 
-# Build Go backend if binary doesn't exist or source is newer
+echo "Starting Python Agent Brain (Intelligence Service) on port 8001..."
+cd /home/runner/workspace/agent-brain
+python main.py > ../logs/brain.log 2>&1 &
+BRAIN_PID=$!
+cd /home/runner/workspace
+
+sleep 3
+
+if ! kill -0 $BRAIN_PID 2>/dev/null; then
+    echo "Warning: Agent Brain service may have failed to start. Check logs/brain.log"
+    echo "Continuing without brain service..."
+else
+    echo "Agent Brain started successfully (PID: $BRAIN_PID)"
+fi
+
 echo "Checking Go backend..."
 if [ ! -f "backend-go/performa-backend" ] || [ "backend-go/main.go" -nt "backend-go/performa-backend" ]; then
     echo "Building Go backend..."
     cd backend-go && go build -o performa-backend . && cd ..
 fi
 
-# Start Go backend in background
 echo "Starting Go backend server on port 8000..."
 cd backend-go && ./performa-backend > ../logs/backend.log 2>&1 &
 BACKEND_PID=$!
 cd ..
 
-# Give backend time to start
 sleep 2
 
-# Check if backend is running
 if ! kill -0 $BACKEND_PID 2>/dev/null; then
     echo "Backend failed to start. Check logs/backend.log"
     cat logs/backend.log
@@ -51,7 +60,6 @@ fi
 
 echo "Backend started successfully (PID: $BACKEND_PID)"
 
-# Start frontend (foreground - this is what Replit monitors)
 echo "Starting frontend server on port 5000..."
 cd /home/runner/workspace
 npm run dev

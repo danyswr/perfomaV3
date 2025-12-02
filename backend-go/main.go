@@ -33,6 +33,8 @@ func main() {
         models.Findings.SetFindingsDir(config.AppConfig.FindingsDir)
         models.Findings.LoadFindings()
 
+        handlers.InitBrainClient()
+
         go ws.MainHub.Run()
 
         go startResourceMonitor()
@@ -83,6 +85,19 @@ func main() {
                 api.Post("/findings", handlers.CreateFinding)
 
                 api.Get("/models", handlers.GetModels)
+
+                brain := api.Group("/brain")
+                {
+                        brain.Get("/health", handlers.BrainHealth)
+                        brain.Get("/status", handlers.GetBrainStatus)
+                        brain.Post("/think", handlers.BrainThink)
+                        brain.Post("/classify", handlers.BrainClassify)
+                        brain.Post("/evaluate", handlers.BrainEvaluate)
+                        brain.Post("/strategy", handlers.BrainStrategy)
+                        brain.Get("/models", handlers.BrainModels)
+                        brain.Post("/learn", handlers.BrainLearn)
+                        brain.Post("/reset", handlers.BrainReset)
+                }
         }
 
         app.Use("/ws", ws.WebSocketUpgrade)
@@ -137,6 +152,8 @@ func printStartupInfo() {
         } else {
                 fmt.Println("🔑 OpenAI API Key: ✗ Not configured")
         }
+
+        fmt.Printf("🧠 Brain Service URL: %s\n", config.AppConfig.BrainServiceURL)
 }
 
 func startResourceMonitor() {

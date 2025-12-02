@@ -1,16 +1,33 @@
 # Performa - Autonomous CyberSec AI Agent System
 
 ## Overview
-Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend and a Go (Fiber) backend, leveraging multi-agent AI capabilities to enhance cybersecurity operations. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
+Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend, a Go (Fiber) backend for real-time operations, and a Python AI Intelligence service (Agent Brain) for cognitive processing. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
 
 ## Recent Updates (Dec 2, 2025 - Latest)
+- **Three-Tier Architecture Restructure**: Complete separation of concerns
+  - **Go Backend (port 8000)**: Handles real-time WebSocket, monitoring, OpenRouter API, database, REST API
+  - **Python Agent Brain (port 8001)**: AI Intelligence service - reasoning, decision making, fine-tuned LoRA models
+  - **Next.js Frontend (port 5000)**: User interface with real-time updates
+- **Agent Brain Intelligence Service**: New Python service for AI reasoning
+  - Chain-of-thought reasoning engine
+  - Cognitive processing with fine-tuned LoRA adapters
+  - Decision making and strategy generation
+  - Knowledge base for learned patterns
+  - Endpoints: /brain/think, /brain/classify, /brain/evaluate, /brain/strategy
+- **LoRA Fine-Tuned Models**: Integrated custom LoRA adapters for threat classification
+  - Multiple adapter configs based on distilbert-base-uncased and roberta-base
+  - Models stored in `agent-brain/models/`
+- **Brain-Go Integration**: Go backend connects to Python Brain service
+  - Brain client library in `backend-go/brain/`
+  - API routes exposed at `/api/brain/*`
+
+## Previous Updates (Dec 2, 2025)
 - **Go Backend Migration**: Complete backend rewrite from Python FastAPI to Go with Fiber web framework
   - Improved performance and lower memory footprint
   - All REST API endpoints ported: agents, resources, findings, models, missions, logs
   - WebSocket support for real-time updates and bidirectional communication
   - OpenRouter AI model integration for multi-model support
   - Go modules located in `backend-go/` directory
-  - Go backend runs on port 8000, frontend on port 5000
 
 ## Previous Updates (Dec 1, 2025)
 - **Enhanced Mission Summary Dialog**: AI-powered mission summary generation with:
@@ -81,22 +98,36 @@ Performa is an autonomous cybersecurity AI agent system designed for security as
 - Token-efficient model output (batch commands)
 
 ## System Architecture
-The system employs a multi-agent architecture with a Next.js frontend and a Go (Fiber) backend.
+The system employs a three-tier architecture with a Next.js frontend, Go backend for real-time operations, and Python AI Intelligence service.
 
-### Frontend (Next.js 16.0.3)
+### Frontend (Next.js 16.0.3) - Port 5000
 - **Framework**: Next.js with React 19 and TypeScript.
 - **UI/UX**: Utilizes Radix UI, Tailwind CSS, and shadcn/ui for a modern and responsive interface.
 - **Features**: Real-time event broadcast history, live chat, per-agent resource graphs (CPU/Memory), mission timer, OS configuration, and a security findings panel with severity tracking.
 - **Networking**: Configured for Replit's proxy environment with Next.js rewrites for API proxying to the backend.
 
-### Backend (Go with Fiber)
+### Backend (Go with Fiber) - Port 8000
 - **Framework**: Go with Fiber web framework (high-performance, Express-like).
-- **Structure**: Organized into packages: `config/`, `handlers/`, `models/`, `openrouter/`, `ws/`.
+- **Structure**: Organized into packages: `config/`, `handlers/`, `models/`, `openrouter/`, `ws/`, `brain/`.
 - **Core Components**: Manages multi-agent operations, WebSocket communication for real-time events, resource monitoring with psutil integration.
 - **AI Integration**: OpenRouter client for access to various AI models (GPT-4, Claude, Gemini, Llama), with optional direct API fallbacks for Anthropic and OpenAI.
+- **Brain Integration**: HTTP client to communicate with Python Agent Brain service for cognitive operations.
 - **Memory Management**: In-memory data structures for agents, findings, and mission state.
 - **Concurrency**: Uses Go's goroutines and channels for efficient concurrent operations.
 - **Findings Organization**: Organizes findings by target name into dedicated folders, with file explorer endpoints for browsing.
+
+### Agent Brain (Python FastAPI) - Port 8001
+- **Framework**: Python with FastAPI and uvicorn.
+- **Structure**: Organized into modules: `core/`, `memory/`, `reasoning/`, `models/`, `api/`.
+- **Core Components**:
+  - **AgentBrain**: Central intelligence controller for reasoning and decision making
+  - **CognitiveEngine**: Processes inputs using fine-tuned LoRA models
+  - **DecisionMaker**: Strategic planning and action selection
+  - **ReasoningAnalyzer**: Deep analysis of tasks and contexts
+  - **ChainOfThought**: Multi-step reasoning for complex problems
+- **AI Models**: Fine-tuned LoRA adapters (distilbert-base-uncased, roberta-base) for threat classification
+- **Knowledge Base**: Persistent storage for learned patterns and successful strategies
+- **Context Management**: Working memory for maintaining agent state across operations
 
 ### System Design Choices
 - **Real-time Updates**: WebSocket broadcasts provide real-time updates for events, instruction queues, and findings.
