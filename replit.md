@@ -1,9 +1,18 @@
 # Performa - Autonomous CyberSec AI Agent System
 
 ## Overview
-Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend and a Python FastAPI backend, leveraging multi-agent AI capabilities to enhance cybersecurity operations. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
+Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend and a Go (Fiber) backend, leveraging multi-agent AI capabilities to enhance cybersecurity operations. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
 
-## Recent Updates (Dec 1, 2025 - Latest)
+## Recent Updates (Dec 2, 2025 - Latest)
+- **Go Backend Migration**: Complete backend rewrite from Python FastAPI to Go with Fiber web framework
+  - Improved performance and lower memory footprint
+  - All REST API endpoints ported: agents, resources, findings, models, missions, logs
+  - WebSocket support for real-time updates and bidirectional communication
+  - OpenRouter AI model integration for multi-model support
+  - Go modules located in `backend-go/` directory
+  - Go backend runs on port 8000, frontend on port 5000
+
+## Previous Updates (Dec 1, 2025)
 - **Enhanced Mission Summary Dialog**: AI-powered mission summary generation with:
   - Animated progress bar (0-100%) with stage descriptions
   - Progress stages: Collecting logs, Analyzing history, Processing findings, Generating summary, Formatting, Finalizing
@@ -72,7 +81,7 @@ Performa is an autonomous cybersecurity AI agent system designed for security as
 - Token-efficient model output (batch commands)
 
 ## System Architecture
-The system employs a multi-agent architecture with a Next.js frontend and a Python FastAPI backend.
+The system employs a multi-agent architecture with a Next.js frontend and a Go (Fiber) backend.
 
 ### Frontend (Next.js 16.0.3)
 - **Framework**: Next.js with React 19 and TypeScript.
@@ -80,14 +89,14 @@ The system employs a multi-agent architecture with a Next.js frontend and a Pyth
 - **Features**: Real-time event broadcast history, live chat, per-agent resource graphs (CPU/Memory), mission timer, OS configuration, and a security findings panel with severity tracking.
 - **Networking**: Configured for Replit's proxy environment with Next.js rewrites for API proxying to the backend.
 
-### Backend (Python FastAPI)
-- **Framework**: FastAPI with Uvicorn.
-- **Core Components**: Manages multi-agent operations, WebSocket communication for real-time events, resource monitoring, and batch command generation/execution.
-- **AI Integration**: Primarily uses OpenRouter for access to various AI models (GPT-4, Claude, Gemini, Llama), with optional direct API fallbacks for Anthropic and OpenAI.
-- **Memory Management**: Employs an SQLite-based persistent memory system for conversation history, findings, and knowledge base storage, utilizing `aiosqlite` for async operations.
-- **Collaboration**: Features an inter-agent collaboration system with a message bus for communication, shared knowledge, and discovery sharing.
-- **Throttling & Rate Limiting**: Includes an intelligent throttling mechanism (`ThrottleLevel` enum) and token bucket algorithm-based rate limiting for AI model calls to prevent API errors.
-- **Findings Organization**: Organizes findings by target name into dedicated folders, generating clean TXT, JSON, and PDF reports.
+### Backend (Go with Fiber)
+- **Framework**: Go with Fiber web framework (high-performance, Express-like).
+- **Structure**: Organized into packages: `config/`, `handlers/`, `models/`, `openrouter/`, `ws/`.
+- **Core Components**: Manages multi-agent operations, WebSocket communication for real-time events, resource monitoring with psutil integration.
+- **AI Integration**: OpenRouter client for access to various AI models (GPT-4, Claude, Gemini, Llama), with optional direct API fallbacks for Anthropic and OpenAI.
+- **Memory Management**: In-memory data structures for agents, findings, and mission state.
+- **Concurrency**: Uses Go's goroutines and channels for efficient concurrent operations.
+- **Findings Organization**: Organizes findings by target name into dedicated folders, with file explorer endpoints for browsing.
 
 ### System Design Choices
 - **Real-time Updates**: WebSocket broadcasts provide real-time updates for events, instruction queues, and findings.
@@ -102,14 +111,11 @@ The system employs a multi-agent architecture with a Next.js frontend and a Pyth
 
 ## External Dependencies
 
-### Python
-- `fastapi`, `uvicorn`: Web framework and ASGI server.
-- `websockets`: Real-time communication.
-- `psutil`: System resource monitoring.
-- `httpx`, `aiohttp`: HTTP clients.
-- `sqlalchemy`, `aiosqlite`: Database ORM and async SQLite.
-- `reportlab`, `matplotlib`, `weasyprint`: Report generation.
-- `openai`, `anthropic`: AI model integrations.
+### Go
+- `github.com/gofiber/fiber/v2`: High-performance web framework.
+- `github.com/gofiber/websocket/v2`: WebSocket support for Fiber.
+- `github.com/shirou/gopsutil/v3`: Cross-platform system resource monitoring.
+- `github.com/google/uuid`: UUID generation for agents and findings.
 
 ### Node.js
 - `next`, `react`, `react-dom`: Frontend framework.

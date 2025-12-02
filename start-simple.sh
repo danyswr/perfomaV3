@@ -22,23 +22,34 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 ENVFILE
 fi
 
-# Copy .env to backend (filtered)
-if [ -f ".env" ]; then
-    grep -v "^NEXT_PUBLIC_" .env > backend/.env
-fi
-
 # Create directories
 mkdir -p logs findings
 chmod 777 logs findings
 
-# Start backend in background
-echo "Starting backend server on port 8000..."
-cd backend && python3 main.py > ../logs/backend.log 2>&1 &
+# Build Go backend if binary doesn't exist or source is newer
+echo "Checking Go backend..."
+if [ ! -f "backend-go/performa-backend" ] || [ "backend-go/main.go" -nt "backend-go/performa-backend" ]; then
+    echo "Building Go backend..."
+    cd backend-go && go build -o performa-backend . && cd ..
+fi
+
+# Start Go backend in background
+echo "Starting Go backend server on port 8000..."
+cd backend-go && ./performa-backend > ../logs/backend.log 2>&1 &
 BACKEND_PID=$!
 cd ..
 
 # Give backend time to start
-sleep 3
+sleep 2
+
+# Check if backend is running
+if ! kill -0 $BACKEND_PID 2>/dev/null; then
+    echo "Backend failed to start. Check logs/backend.log"
+    cat logs/backend.log
+    exit 1
+fi
+
+echo "Backend started successfully (PID: $BACKEND_PID)"
 
 # Start frontend (foreground - this is what Replit monitors)
 echo "Starting frontend server on port 5000..."
