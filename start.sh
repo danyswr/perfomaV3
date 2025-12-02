@@ -155,8 +155,9 @@ chmod 777 logs findings
 
 # --- START BACKEND ---
 echo -e "\n${BLUE}[*] Starting Backend Server on port $BACKEND_PORT...${NC}"
-python $BACKEND_DIR/main.py > logs/backend.log 2>&1 &
+cd $BACKEND_DIR && python3 main.py > ../logs/backend.log 2>&1 &
 BACKEND_PID=$!
+cd ..
 
 echo -e "${YELLOW}  [*] Waiting for backend to initialize...${NC}"
 for i in {1..20}; do
@@ -175,6 +176,7 @@ fi
 
 # --- START FRONTEND ---
 echo -e "\n${BLUE}[*] Starting Frontend Server on port $FRONTEND_PORT...${NC}"
+mkdir -p logs
 npm run dev > logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 

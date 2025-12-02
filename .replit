@@ -35,7 +35,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bash start.sh"
+args = "bash start-simple.sh"
 waitForPort = 5000
 
 [[ports]]
