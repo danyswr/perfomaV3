@@ -157,6 +157,19 @@ export function useAgents() {
         return agent
       }))
     }
+    
+    if (lastMessage?.type === "agent_resources" && lastMessage.agent_id) {
+      setAgents(prev => prev.map(agent => {
+        if (agent.id === lastMessage.agent_id) {
+          return {
+            ...agent,
+            cpuUsage: typeof lastMessage.cpu_usage === 'number' ? lastMessage.cpu_usage : agent.cpuUsage,
+            memoryUsage: typeof lastMessage.memory_usage === 'number' ? lastMessage.memory_usage : agent.memoryUsage,
+          }
+        }
+        return agent
+      }))
+    }
   }, [lastMessage])
 
   useEffect(() => {

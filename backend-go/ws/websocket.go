@@ -98,6 +98,15 @@ func BroadcastResources(cpu, memory, disk, network float64) {
         }
 }
 
+func BroadcastResourceUpdate(agentID string, cpu, memory float64) {
+        MainHub.broadcast <- WSMessage{
+                Type:    "agent_resources",
+                AgentID: agentID,
+                CPU:     cpu,
+                Memory:  memory,
+        }
+}
+
 func WebSocketUpgrade(c *fiber.Ctx) error {
         if websocket.IsWebSocketUpgrade(c) {
                 return c.Next()

@@ -7,6 +7,7 @@ import (
         "time"
 
         "performa-backend/config"
+        "performa-backend/database"
         "performa-backend/handlers"
         "performa-backend/models"
         "performa-backend/ws"
@@ -26,6 +27,11 @@ func main() {
         printBanner()
 
         config.Load()
+
+        if err := database.Init(); err != nil {
+                log.Printf("Warning: Database initialization failed: %v", err)
+        }
+        defer database.Close()
 
         os.MkdirAll(config.AppConfig.LogDir, 0755)
         os.MkdirAll(config.AppConfig.FindingsDir, 0755)
@@ -82,7 +88,12 @@ func main() {
                 api.Get("/config/:id", handlers.GetConfig)
 
                 api.Post("/models/test", handlers.TestModel)
-                api.Post("/session/save", handlers.SaveSession)
+                api.Post("/session/save", handlers.SaveSessionHandler)
+                api.Get("/session", handlers.GetSessionsHandler)
+                api.Get("/session/:id", handlers.GetSessionHandler)
+                api.Delete("/session/:id", handlers.DeleteSessionHandler)
+                api.Post("/session/:id/load", handlers.LoadSessionHandler)
+                api.Delete("/config/:id", handlers.DeleteConfig)
 
                 api.Get("/resources", handlers.GetResources)
 
