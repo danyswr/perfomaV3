@@ -126,8 +126,8 @@ function FileViewer({ file, content, loading, onClose }: {
     switch (content.type) {
       case 'json':
         return (
-          <ScrollArea className="h-full max-h-[60vh]">
-            <pre className="text-xs font-mono p-4 bg-muted/30 rounded-lg whitespace-pre-wrap break-all">
+          <ScrollArea className="h-full">
+            <pre className="text-xs sm:text-sm font-mono p-4 sm:p-6 bg-muted/30 rounded-lg whitespace-pre-wrap break-words overflow-x-auto">
               {typeof content.content === 'string' 
                 ? content.content 
                 : JSON.stringify(content.content, null, 2)}
@@ -136,9 +136,9 @@ function FileViewer({ file, content, loading, onClose }: {
         )
       case 'html':
         return (
-          <ScrollArea className="h-full max-h-[60vh]">
+          <ScrollArea className="h-full">
             <div 
-              className="prose prose-sm dark:prose-invert max-w-none p-4 break-words"
+              className="prose prose-sm dark:prose-invert max-w-none p-4 sm:p-6 break-words [&>*]:max-w-full [&_pre]:overflow-x-auto [&_code]:break-words"
               dangerouslySetInnerHTML={{ __html: content.content }}
             />
           </ScrollArea>
@@ -148,8 +148,8 @@ function FileViewer({ file, content, loading, onClose }: {
       case 'csv':
       case 'xml':
         return (
-          <ScrollArea className="h-full max-h-[60vh]">
-            <pre className="text-xs font-mono p-4 bg-muted/30 rounded-lg whitespace-pre-wrap break-all">
+          <ScrollArea className="h-full">
+            <pre className="text-xs sm:text-sm font-mono p-4 sm:p-6 bg-muted/30 rounded-lg whitespace-pre-wrap break-words overflow-x-auto">
               {content.content}
             </pre>
           </ScrollArea>
@@ -179,28 +179,28 @@ function FileViewer({ file, content, loading, onClose }: {
 
   return (
     <Dialog open={!!file} onOpenChange={() => onClose()}>
-      <DialogContent className="w-[95vw] max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden p-3 sm:p-6">
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="flex items-center gap-2 pr-8 text-sm sm:text-base">
+      <DialogContent className="w-[98vw] max-w-[1100px] h-[90vh] max-h-[90vh] flex flex-col overflow-hidden p-4 sm:p-6">
+        <DialogHeader className="shrink-0 pb-3">
+          <DialogTitle className="flex items-center gap-3 pr-8 text-base sm:text-lg">
             {getFileIcon(file.type)}
-            <span className="truncate flex-1 min-w-0 text-xs sm:text-sm">{file.name}</span>
-            <Badge variant="outline" className="text-[10px] sm:text-xs uppercase shrink-0">{file.type}</Badge>
+            <span className="truncate flex-1 min-w-0 text-sm sm:text-base font-semibold">{file.name}</span>
+            <Badge variant="outline" className="text-xs uppercase shrink-0 px-2 py-1">{file.type}</Badge>
           </DialogTitle>
         </DialogHeader>
-        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground pb-2 border-b shrink-0 flex-wrap">
-          <span className="flex items-center gap-1">
-            <HardDrive className="w-3 h-3" />
+        <div className="flex items-center gap-3 text-xs text-muted-foreground pb-3 border-b shrink-0 flex-wrap">
+          <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded">
+            <HardDrive className="w-3.5 h-3.5" />
             {formatFileSize(file.size)}
           </span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
+          <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded">
+            <Clock className="w-3.5 h-3.5" />
             {formatDate(file.modified)}
           </span>
           {file.target && (
-            <Badge variant="secondary" className="text-[9px] sm:text-[10px]">Target: {file.target}</Badge>
+            <Badge variant="secondary" className="text-xs px-2 py-1">Target: {file.target}</Badge>
           )}
         </div>
-        <div className="flex-1 overflow-hidden min-h-0">
+        <div className="flex-1 overflow-auto min-h-0 mt-3">
           {renderContent()}
         </div>
       </DialogContent>

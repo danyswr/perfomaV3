@@ -145,7 +145,11 @@ export function LiveChat() {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
-        {connectionError && connectionError !== "WebSocket connection error" && !connectionError.includes("Unable to connect") && (
+        {connectionError && 
+         connectionError !== "WebSocket connection error" && 
+         !connectionError.includes("Unable to connect") && 
+         !connectionError.includes("connection error") &&
+         (connectionError.includes("402") || connectionError.includes("401") || connectionError.includes("API")) && (
           <div className="mx-4 mb-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 shrink-0">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />

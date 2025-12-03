@@ -1562,14 +1562,16 @@ export default function Dashboard() {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <div className={`flex items-center justify-between p-3 rounded-lg border ${config.allowedToolsOnly ? 'bg-primary/10 border-primary/30' : 'bg-destructive/10 border-destructive/20'}`}>
                     <div className="space-y-1">
-                      <Label className="text-xs font-medium flex items-center gap-2 text-destructive">
+                      <Label className={`text-xs font-medium flex items-center gap-2 ${config.allowedToolsOnly ? 'text-primary' : 'text-destructive'}`}>
                         <Shield className="w-4 h-4" />
-                        Strict Mode (ONLY Allowed Tools)
+                        {config.allowedToolsOnly ? 'RESTRICTED MODE ACTIVE' : 'Strict Mode (Restrict Tools)'}
                       </Label>
                       <p className="text-[10px] text-muted-foreground">
-                        When enabled, agent can ONLY use tools you specify below. All other tools will be blocked.
+                        {config.allowedToolsOnly 
+                          ? `Model will ONLY use ${config.requestedTools.length > 0 ? config.requestedTools.length + ' selected' : 'the'} tools. All other tools are BLOCKED.`
+                          : 'Enable to restrict model to ONLY use tools you specify below.'}
                       </p>
                     </div>
                     <Switch
@@ -1579,6 +1581,15 @@ export default function Dashboard() {
                       }
                     />
                   </div>
+
+                  {config.allowedToolsOnly && config.requestedTools.length === 0 && (
+                    <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                      <p className="text-[10px] text-yellow-600 dark:text-yellow-500 flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Warning: No tools selected! Model cannot execute any commands until you add tools below.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <Input
