@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "python-3.11", "go-1.21", "web", "bash"]
+modules = ["python-3.11", "nodejs-20", "go-1.21", "bash", "web"]
 [agent]
 expertMode = true
 
