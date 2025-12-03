@@ -1,12 +1,13 @@
 module performa-backend
 
-go 1.24.4
+go 1.22
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/gofiber/websocket/v2 v2.2.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/shirou/gopsutil/v3 v3.24.5
 )
 
@@ -15,7 +16,6 @@ require (
 	github.com/fasthttp/websocket v1.5.3 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
