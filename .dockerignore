@@ -4,11 +4,15 @@ node_modules
 __pycache__
 *.pyc
 .pythonlibs
+.venv
+venv
+*.egg-info
 
 # Build outputs
 .next
 dist
 build
+backend-go/performa-backend
 
 # Logs and findings (mounted as volumes)
 logs/
@@ -34,8 +38,23 @@ findings/
 .DS_Store
 Thumbs.db
 
+# Replit
+.replit
+replit.nix
+.local
+.cache
+.upm
+attached_assets
+
+# Python
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+.tox
+.nox
+
 # Misc
 *.md
 !README.md
-.replit
-replit.nix
+!DOCKER.md
