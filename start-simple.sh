@@ -22,7 +22,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 ENVFILE
 fi
 
-mkdir -p logs findings agent-brain/knowledge
+mkdir -p logs findings agent-brain/knowledge agent-brain/data
 
 echo "Starting Python Agent Brain (Intelligence Service) on port 8001..."
 cd /home/runner/workspace/agent-brain

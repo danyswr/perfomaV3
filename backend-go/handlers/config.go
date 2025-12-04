@@ -217,31 +217,6 @@ func DeleteConfig(c *fiber.Ctx) error {
         })
 }
 
-func TestModel(c *fiber.Ctx) error {
-        var req struct {
-                Provider string `json:"provider"`
-                Model    string `json:"model"`
-                APIKey   string `json:"api_key,omitempty"`
-        }
-
-        if err := c.BodyParser(&req); err != nil {
-                return c.Status(400).JSON(fiber.Map{
-                        "error": "Invalid request body",
-                })
-        }
-
-        start := time.Now()
-        latency := time.Since(start)
-
-        return c.JSON(fiber.Map{
-                "status":   "success",
-                "message":  "Model is available",
-                "provider": req.Provider,
-                "model":    req.Model,
-                "latency":  latency.String(),
-        })
-}
-
 type SessionSaveRequest struct {
         Name     string      `json:"name"`
         Config   interface{} `json:"config"`

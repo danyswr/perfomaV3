@@ -1,14 +1,28 @@
 # Performa - Autonomous CyberSec AI Agent System
 
 ## Overview
-Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend, a Go (Fiber) backend for real-time operations, and a Python AI Intelligence service (Agent Brain) for cognitive processing. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
+Performa is an autonomous cybersecurity AI agent system designed for security assessments, real-time monitoring, and automated threat detection. It features a sophisticated Next.js frontend, a Go (Fiber) backend for infrastructure, and a Python AI Intelligence service (Agent Brain) for all cognitive and mission management operations. The project aims to provide a powerful, efficient, and user-friendly platform for managing complex security tasks.
 
-## Recent Updates (Dec 2, 2025 - Latest)
-- **Three-Tier Architecture Restructure**: Complete separation of concerns
-  - **Go Backend (port 8000)**: Handles real-time WebSocket, monitoring, OpenRouter API, database, REST API
-  - **Python Agent Brain (port 8001)**: AI Intelligence service - reasoning, decision making, fine-tuned LoRA models
+## Recent Updates (Dec 4, 2025 - Latest)
+- **Clean Architecture Restructure**: Complete separation of concerns with clear responsibilities
+  - **Python Agent Brain (port 8001)**: ALL intelligence and mission logic
+    - Mission configuration and management
+    - Agent creation and lifecycle management
+    - Session save/load operations
+    - AI reasoning and decision making
+    - Endpoints: /api/mission/*, /api/agents/*, /api/config/*, /api/session/*, /api/start, /api/stop
+  - **Go Backend (port 8000)**: Infrastructure only
+    - System resource monitoring (/api/resources)
+    - AI model API connections (/api/models/*)
+    - Security findings management (/api/findings/*)
+    - WebSocket for real-time updates (/ws/*)
+    - Proxy to Python brain service for all intelligence operations
   - **Next.js Frontend (port 5000)**: User interface with real-time updates
-- **Agent Brain Intelligence Service**: New Python service for AI reasoning
+- **Simplified Docker Setup**: Single unified Dockerfile and docker-compose.yml
+- **Proxy Architecture**: Go backend proxies intelligence endpoints to Python brain
+
+## Previous Updates (Dec 2, 2025)
+- **Agent Brain Intelligence Service**: Python service for AI reasoning
   - Chain-of-thought reasoning engine
   - Cognitive processing with fine-tuned LoRA adapters
   - Decision making and strategy generation
@@ -17,9 +31,6 @@ Performa is an autonomous cybersecurity AI agent system designed for security as
 - **LoRA Fine-Tuned Models**: Integrated custom LoRA adapters for threat classification
   - Multiple adapter configs based on distilbert-base-uncased and roberta-base
   - Models stored in `agent-brain/models/`
-- **Brain-Go Integration**: Go backend connects to Python Brain service
-  - Brain client library in `backend-go/brain/`
-  - API routes exposed at `/api/brain/*`
 
 ## Previous Updates (Dec 2, 2025)
 - **Go Backend Migration**: Complete backend rewrite from Python FastAPI to Go with Fiber web framework
